@@ -38,28 +38,11 @@ def check_biome():
                         biome_counter[biome] = 0
                     else:
                         biome_counter[biome] += 1
-
-    
     
     majority_biome = max(biome_counter.items(), key = operator.itemgetter(1))[0]
 
     print(f"Majority biome in the build area: {majority_biome}")
 
-
-
-    """
-    localCenter = buildRect.size // 2
-    heightmap = worldSlice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
-
-    center_biome = worldSlice.getBiome(addY(localCenter, 0))
-
-    print(f"Biome at the center of the build area: {center_biome}")
-    """
-
-def main():
-    check_biome()
-
-if __name__ == "__main__":
-    main()
+    return majority_biome
 
     
