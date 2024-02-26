@@ -42,12 +42,3 @@ def check_biome():
 # Get list of blocks for each biome, builds are biome-dependent
 def get_block_list():
     return None
-
-
-def main():
-    maj_biome = check_biome()
-    print(maj_biome)
-
-if __name__ == "__main__":
-    main()
-
