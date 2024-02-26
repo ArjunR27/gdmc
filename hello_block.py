@@ -6,6 +6,7 @@ import sys
 
 from gdpc import __url__, Editor, Block
 from gdpc.exceptions import InterfaceConnectionError
+from tqdm import tqdm
 
 
 # Create an editor object.
@@ -27,12 +28,13 @@ except InterfaceConnectionError:
 
 
 # Place a block of red concrete at (0,80,0)!
-editor.placeBlock((72,65,-95), Block("red_concrete"))
+editor.placeBlock((104,85,-43), Block("red_concrete"))
 
 
 # Retrieve the block at (0,80,0) and print it.
-block = editor.getBlock((72,65,-95))
+block = editor.getBlock((102,67,-65))
 print(f"Block at (72,65,-95): {block}")
+
 
 
 # Tip: to get the ID of a block in Minecraft (like "red_concrete"), press F3 and point at the

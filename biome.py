@@ -12,18 +12,7 @@ import operator
 
 
 # Returns the most common biome within the set build area
-def check_biome():
-    editor = Editor()
-
-    try:
-        buildArea = editor.getBuildArea()
-    except BuildAreaNotSetError:
-        print("Failed to get build area")
-        sys.exit(1)
-
-    buildRect = buildArea.toRect()
-    worldSlice = editor.loadWorldSlice(buildRect)
-
+def check_biome(buildArea, worldSlice):
     biome_counter = Counter()
 
     
@@ -42,3 +31,5 @@ def check_biome():
 # Get list of blocks for each biome, builds are biome-dependent
 def get_block_list():
     return None
+
+
