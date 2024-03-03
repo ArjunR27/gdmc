@@ -12,24 +12,17 @@ import operator
 
 
 # Returns the most common biome within the set build area
-def check_biome(buildArea, worldSlice):
-    biome_counter = Counter()
+def check_biome(editor):
+    buildArea = editor.getBuildArea()
+    return editor.getBiome(buildArea.center)
+                
 
+def main():
+    editor = Editor()
+    maj_biome = check_biome(editor)
+    print(maj_biome)
     
-    for x in range(buildArea.begin[0], buildArea.end[0]):
-        for z in range(buildArea.begin[1], buildArea.end[1]):
-            for y in range(buildArea.begin[2], buildArea.end[2]):
-                biome = worldSlice.getBiome(addY((x, 0, z), y))
-                if biome:
-                    biome_counter[biome] += 1
-
-    majority_biome = biome_counter.most_common(1)[0][0]
-    
-    return majority_biome
-
-
-# Get list of blocks for each biome, builds are biome-dependent
-def get_block_list():
-    return None
+if __name__ == "__main__":
+    main()
 
 
