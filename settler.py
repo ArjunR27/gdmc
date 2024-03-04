@@ -240,7 +240,7 @@ for x_start in range(0, best_plot.plot_len - building_size + 1, step):
     for z_start in range(0, best_plot.plot_len - building_size + 1, step):
 
         # Extract a potential plot, get std and water_percentage
-        plot = best_plot[x_start: x_start + building_size, z_start: z_start + building_size]
+        plot = best_plot.plot[x_start: x_start + building_size, z_start: z_start + building_size]
         std = np.std(plot)
         water_plot = best_plot_water[x_start: x_start + building_size, z_start: z_start + building_size]
         water_percentage = np.count_nonzero(water_plot == 1) / water_plot.size * 100
