@@ -1,9 +1,10 @@
+
 import sys
 from gdpc import __url__, Editor, Block, geometry, Box
 from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
 from gdpc.vector_tools import *
 import numpy as np
-import multiprocessing
+import itertools
 
 blocks_to_remove = {
     Block("minecraft:oak_leaves").id,
@@ -41,7 +42,8 @@ def remove():
     editor = Editor()
     editor.buffering = True
     editor.bufferLimit = 512
-    editor.multithreading = True
+    # editor.multithreading = True
+    editor.caching = True
     try:
         editor.checkConnection()
     except InterfaceConnectionError:
@@ -83,17 +85,14 @@ def remove():
     print(max_surface_height)
 
     points_to_remove = []
-    for x in range(buildArea.begin[0], buildArea.end[0]):
-        for y in range(min_surface_height, max_surface_height):
-            for z in range(buildArea.begin[2], buildArea.end[2]):
-
-                # editor.placeBlock((x,y,z), Block("oak_log"))
-
-                block = editor.getBlock((x, y, z))
-                # print(block)
-                if block.id in blocks_to_remove:
-                    print((x, y, z))
-                    points_to_remove.append((x, y, z))
+    # Use itertools.product() to create combinations of x, y, and z values
+    for x, y, z in itertools.product(range(buildArea.begin[0], buildArea.end[0]),
+                                      range(min_surface_height, max_surface_height),
+                                      range(buildArea.begin[2], buildArea.end[2])):
+        block = editor.getBlock((x, y, z))
+        if block.id in blocks_to_remove:
+            print((x, y, z))
+            points_to_remove.append((x, y, z))
     editor.placeBlock(points_to_remove, Block("air"))
 
 def main():
