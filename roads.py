@@ -39,7 +39,10 @@ worldSlice = editor.loadWorldSlice(buildRect)
 print("World slice loaded!")
 
 heightmap = worldSlice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
+areaLow = buildArea.begin
+areaHigh = buildArea.end
 
+print("helooooooooo", heightmap[86 - areaLow[0]][13 - areaLow[2]])
 
 def buildRoads(buildings):
     obstacles = []
@@ -119,7 +122,7 @@ class Node:
 
         if parent is not None:
             self.g = parent.g + 1
-            self.e = parent.e + abs(parent.pos.y - self.pos.y)
+            self.e = parent.e + 2 * abs(parent.pos.y - self.pos.y)
 
         self.f = self.g + self.h + self.e
 
@@ -131,14 +134,26 @@ class Node:
 
     def possibleBlocks(self):
         blocks = []
-        blocks.append(Point(self.pos.x + 1, self.pos.y, self.pos.z))
+        """blocks.append(Point(self.pos.x + 1, self.pos.y, self.pos.z))
         blocks.append(Point(self.pos.x, self.pos.y, self.pos.z + 1))
         blocks.append(Point(self.pos.x - 1, self.pos.y, self.pos.z))
-        blocks.append(Point(self.pos.x, self.pos.y, self.pos.z - 1))
+        blocks.append(Point(self.pos.x, self.pos.y, self.pos.z - 1))"""
+        print("hi")
+
+        blocks.append(Point(self.pos.x + 1, heightmap[self.pos.x + 1 - areaLow[0]][self.pos.z - areaLow[2]] - 1, self.pos.z))
+        blocks.append(Point(self.pos.x, heightmap[self.pos.x - areaLow[0]][self.pos.z + 1 - areaLow[2]] - 1, self.pos.z + 1))
+        blocks.append(Point(self.pos.x - 1, heightmap[self.pos.x - 1 - areaLow[0]][self.pos.z - areaLow[2]] - 1, self.pos.z))
+        blocks.append(Point(self.pos.x, heightmap[self.pos.x - areaLow[0]][self.pos.z - 1 - areaLow[2]] - 1, self.pos.z - 1))
         return blocks
 
+building1 = Building(5, 3, 6, Point(86, 63, 9))
+building2 = Building(5, 4, 6, Point(76, 63, 28))
+building3 = Building(5, 3, 6, Point(128, 62, 7))
+building4 = Building(5, 4, 6, Point(152, 66, -12))
 
-buildings = [Building(7, 4, 6, Point(79, 63, 16)), Building(5, 3, 6, Point(86, 63, 9)), Building(5, 4, 6, Point(76, 63, 28))]
-#buildings = [Building(5, 3, 6, Point(86, 63, 9)), Building(5, 4, 6, Point(76, 63, 28))]
+#buildings = [Building(7, 4, 6, Point(79, 63, 16)), Building(5, 3, 6, Point(86, 63, 9)), Building(5, 4, 6, Point(76, 63, 28))]
+buildings = [building1, building2]
+buildings = [building1, building3]
+buildings = [building1, building4]
 #buildings = [Building(7, 4, 6, Point(79, 63, 16)), Building(5, 3, 6, Point(86, 63, 9))]
 buildRoads(buildings)
