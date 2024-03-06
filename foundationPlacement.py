@@ -32,6 +32,7 @@ except BuildAreaNotSetError:
 
 buildRect = buildArea.toRect()
 
+
 def createFoundation(buildRectangle):
     worldSlice = editor.loadWorldSlice(buildRectangle)
     print("World slice loaded!")
@@ -40,4 +41,6 @@ def createFoundation(buildRectangle):
 
     maxHeight = np.max(heightmap)
     minHeight = np.min(heightmap)
-    geometry.placeBoxHollow(editor, Box((buildRect.begin.x, minHeight, buildRect.begin.y), (buildRect.size.x, maxHeight-minHeight, buildRect.size.y)), Block("blue_concrete"))
+    geometry.placeBoxHollow(editor, Box((buildRect.begin.x, minHeight, buildRect.begin.y),
+                                        (buildRect.size.x, maxHeight - minHeight, buildRect.size.y)),
+                            Block("blue_concrete"))
