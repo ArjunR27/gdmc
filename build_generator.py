@@ -94,298 +94,151 @@ def loopArea(begin: Vec3iLike, end: Optional[Vec3iLike] = None):
                 yield ivec3(x, y, z)
 
 
-def print_blocks_in_cube(editor, corner1, corner2):
-    # Initialize the structure list
-    structure = []
+def print_structure_list(editor, corner1, corner2):
+    # Initialize the block_names 3D array
+    block_names_array = []
 
-    # Loop through all the blocks in the cube and append to the structure list
-    for vec in loopArea(corner1, corner2):
-        # Calculate relative positions
-        relative_position = ivec3(vec.x - corner1.x, vec.y - corner1.y, vec.z - corner1.z)
-        block = str(editor.getBlock(vec))
-        # Extracting the block name without the minecraft: prefix
-        block_name = block.split(":")[-1]  # Assuming block format is 'minecraft:block_name'
-        structure.append((relative_position.x, relative_position.y, relative_position.z, block_name))
+    # Loop through all the blocks in the cube and append block names to the 3D array
+    for x in range(corner1[0], corner2[0] + nonZeroSign(corner2[0] - corner1[0]), nonZeroSign(corner2[0] - corner1[0])):
+        x_slice = []
+        for y in range(corner1[1], corner2[1] + nonZeroSign(corner2[1] - corner1[1]),
+                       nonZeroSign(corner2[1] - corner1[1])):
+            y_slice = []
+            for z in range(corner1[2], corner2[2] + nonZeroSign(corner2[2] - corner1[2]),
+                           nonZeroSign(corner2[2] - corner1[2])):
+                vec = ivec3(x, y, z)
+                block = str(editor.getBlock(vec))
+                # Extracting the block name without the minecraft: prefix
+                block_name = block.split(":")[-1]  # Assuming block format is 'minecraft:block_name'
+                y_slice.append(block_name)
+            x_slice.append(y_slice)
+        block_names_array.append(x_slice)
 
-    # Print the structure list
-    print("structure = [")
-    for entry in structure:
-        print(f'    {entry},')
-    print("]")
+    # Print the block_names 3D array
+    """print("structure = [")
+    for x_slice in block_names_array:
+        print("    [")
+        for y_slice in x_slice:
+            print(f'        {y_slice},')
+        print("    ],")
+    print("]")"""
 
 
-def build_house(editor, start_coordinate):
+def build_house(editor, start):
     structure = [
-        (0, 0, 0, 'diamond_block'),
-        (0, 0, -1, 'air'),
-        (0, 0, -2, 'air'),
-        (0, 0, -3, 'air'),
-        (0, 0, -4, 'air'),
-        (0, 0, -5, 'air'),
-        (0, 0, -6, 'air'),
-        (0, 1, 0, 'air'),
-        (0, 1, -1, 'air'),
-        (0, 1, -2, 'air'),
-        (0, 1, -3, 'air'),
-        (0, 1, -4, 'air'),
-        (0, 1, -5, 'air'),
-        (0, 1, -6, 'air'),
-        (0, 2, 0, 'air'),
-        (0, 2, -1, 'air'),
-        (0, 2, -2, 'air'),
-        (0, 2, -3, 'air'),
-        (0, 2, -4, 'air'),
-        (0, 2, -5, 'air'),
-        (0, 2, -6, 'air'),
-        (0, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=outer_left,waterlogged=false]'),
-        (0, 3, -1, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (0, 3, -2, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (0, 3, -3, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (0, 3, -4, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (0, 3, -5, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (0, 3, -6, 'polished_andesite_stairs[facing=west,half=bottom,shape=outer_left,waterlogged=false]'),
-        (0, 4, 0, 'air'),
-        (0, 4, -1, 'air'),
-        (0, 4, -2, 'air'),
-        (0, 4, -3, 'air'),
-        (0, 4, -4, 'air'),
-        (0, 4, -5, 'air'),
-        (0, 4, -6, 'air'),
-        (-1, 0, 0, 'air'),
-        (-1, 0, -1, 'oak_log[axis=y]'),
-        (-1, 0, -2, 'oak_planks'),
-        (-1, 0, -3, 'oak_door[facing=west,half=lower,hinge=right,open=false,powered=false]'),
-        (-1, 0, -4, 'oak_planks'),
-        (-1, 0, -5, 'oak_log[axis=y]'),
-        (-1, 0, -6, 'air'),
-        (-1, 1, 0, 'air'),
-        (-1, 1, -1, 'oak_log[axis=y]'),
-        (-1, 1, -2, 'glass'),
-        (-1, 1, -3, 'oak_door[facing=west,half=upper,hinge=right,open=false,powered=false]'),
-        (-1, 1, -4, 'glass'),
-        (-1, 1, -5, 'oak_log[axis=y]'),
-        (-1, 1, -6, 'air'),
-        (-1, 2, 0, 'air'),
-        (-1, 2, -1, 'oak_log[axis=y]'),
-        (-1, 2, -2, 'oak_planks'),
-        (-1, 2, -3, 'oak_planks'),
-        (-1, 2, -4, 'oak_planks'),
-        (-1, 2, -5, 'oak_log[axis=y]'),
-        (-1, 2, -6, 'air'),
-        (-1, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-1, 3, -1, 'oak_log[axis=y]'),
-        (-1, 3, -2, 'cobblestone'),
-        (-1, 3, -3, 'cobblestone'),
-        (-1, 3, -4, 'cobblestone'),
-        (-1, 3, -5, 'oak_log[axis=y]'),
-        (-1, 3, -6, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-1, 4, 0, 'air'),
-        (-1, 4, -1, 'polished_andesite_stairs[facing=west,half=bottom,shape=outer_right,waterlogged=false]'),
-        (-1, 4, -2, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (-1, 4, -3, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (-1, 4, -4, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (-1, 4, -5, 'polished_andesite_stairs[facing=west,half=bottom,shape=outer_left,waterlogged=false]'),
-        (-1, 4, -6, 'air'),
-        (-2, 0, 0, 'air'),
-        (-2, 0, -1, 'oak_planks'),
-        (-2, 0, -2, 'air'),
-        (-2, 0, -3, 'air'),
-        (-2, 0, -4, 'air'),
-        (-2, 0, -5, 'oak_planks'),
-        (-2, 0, -6, 'air'),
-        (-2, 1, 0, 'air'),
-        (-2, 1, -1, 'glass'),
-        (-2, 1, -2, 'air'),
-        (-2, 1, -3, 'air'),
-        (-2, 1, -4, 'air'),
-        (-2, 1, -5, 'glass'),
-        (-2, 1, -6, 'air'),
-        (-2, 2, 0, 'air'),
-        (-2, 2, -1, 'oak_planks'),
-        (-2, 2, -2, 'air'),
-        (-2, 2, -3, 'air'),
-        (-2, 2, -4, 'air'),
-        (-2, 2, -5, 'oak_planks'),
-        (-2, 2, -6, 'air'),
-        (-2, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-2, 3, -1, 'cobblestone'),
-        (-2, 3, -2, 'air'),
-        (-2, 3, -3, 'air'),
-        (-2, 3, -4, 'air'),
-        (-2, 3, -5, 'cobblestone'),
-        (-2, 3, -6, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-2, 4, 0, 'air'),
-        (-2, 4, -1, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-2, 4, -2, 'polished_andesite'),
-        (-2, 4, -3, 'polished_andesite'),
-        (-2, 4, -4, 'polished_andesite'),
-        (-2, 4, -5, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-2, 4, -6, 'air'),
-        (-3, 0, 0, 'air'),
-        (-3, 0, -1, 'oak_planks'),
-        (-3, 0, -2, 'air'),
-        (-3, 0, -3, 'air'),
-        (-3, 0, -4, 'air'),
-        (-3, 0, -5, 'oak_planks'),
-        (-3, 0, -6, 'air'),
-        (-3, 1, 0, 'air'),
-        (-3, 1, -1, 'glass'),
-        (-3, 1, -2, 'air'),
-        (-3, 1, -3, 'air'),
-        (-3, 1, -4, 'air'),
-        (-3, 1, -5, 'glass'),
-        (-3, 1, -6, 'air'),
-        (-3, 2, 0, 'air'),
-        (-3, 2, -1, 'oak_planks'),
-        (-3, 2, -2, 'air'),
-        (-3, 2, -3, 'air'),
-        (-3, 2, -4, 'air'),
-        (-3, 2, -5, 'oak_planks'),
-        (-3, 2, -6, 'air'),
-        (-3, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-3, 3, -1, 'cobblestone'),
-        (-3, 3, -2, 'air'),
-        (-3, 3, -3, 'air'),
-        (-3, 3, -4, 'air'),
-        (-3, 3, -5, 'cobblestone'),
-        (-3, 3, -6, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-3, 4, 0, 'air'),
-        (-3, 4, -1, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-3, 4, -2, 'polished_andesite'),
-        (-3, 4, -3, 'polished_andesite'),
-        (-3, 4, -4, 'polished_andesite'),
-        (-3, 4, -5, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-3, 4, -6, 'air'),
-        (-4, 0, 0, 'air'),
-        (-4, 0, -1, 'oak_planks'),
-        (-4, 0, -2, 'air'),
-        (-4, 0, -3, 'air'),
-        (-4, 0, -4, 'air'),
-        (-4, 0, -5, 'oak_planks'),
-        (-4, 0, -6, 'air'),
-        (-4, 1, 0, 'air'),
-        (-4, 1, -1, 'glass'),
-        (-4, 1, -2, 'air'),
-        (-4, 1, -3, 'air'),
-        (-4, 1, -4, 'air'),
-        (-4, 1, -5, 'glass'),
-        (-4, 1, -6, 'air'),
-        (-4, 2, 0, 'air'),
-        (-4, 2, -1, 'oak_planks'),
-        (-4, 2, -2, 'air'),
-        (-4, 2, -3, 'air'),
-        (-4, 2, -4, 'air'),
-        (-4, 2, -5, 'oak_planks'),
-        (-4, 2, -6, 'air'),
-        (-4, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-4, 3, -1, 'cobblestone'),
-        (-4, 3, -2, 'air'),
-        (-4, 3, -3, 'air'),
-        (-4, 3, -4, 'air'),
-        (-4, 3, -5, 'cobblestone'),
-        (-4, 3, -6, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-4, 4, 0, 'air'),
-        (-4, 4, -1, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-4, 4, -2, 'polished_andesite'),
-        (-4, 4, -3, 'polished_andesite'),
-        (-4, 4, -4, 'polished_andesite'),
-        (-4, 4, -5, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-4, 4, -6, 'air'),
-        (-5, 0, 0, 'air'),
-        (-5, 0, -1, 'oak_log[axis=y]'),
-        (-5, 0, -2, 'oak_planks'),
-        (-5, 0, -3, 'oak_planks'),
-        (-5, 0, -4, 'oak_planks'),
-        (-5, 0, -5, 'oak_log[axis=y]'),
-        (-5, 0, -6, 'air'),
-        (-5, 1, 0, 'air'),
-        (-5, 1, -1, 'oak_log[axis=y]'),
-        (-5, 1, -2, 'glass'),
-        (-5, 1, -3, 'glass'),
-        (-5, 1, -4, 'glass'),
-        (-5, 1, -5, 'oak_log[axis=y]'),
-        (-5, 1, -6, 'air'),
-        (-5, 2, 0, 'air'),
-        (-5, 2, -1, 'oak_log[axis=y]'),
-        (-5, 2, -2, 'oak_planks'),
-        (-5, 2, -3, 'oak_planks'),
-        (-5, 2, -4, 'oak_planks'),
-        (-5, 2, -5, 'oak_log[axis=y]'),
-        (-5, 2, -6, 'air'),
-        (-5, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-5, 3, -1, 'oak_log[axis=y]'),
-        (-5, 3, -2, 'cobblestone'),
-        (-5, 3, -3, 'cobblestone'),
-        (-5, 3, -4, 'cobblestone'),
-        (-5, 3, -5, 'oak_log[axis=y]'),
-        (-5, 3, -6, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-5, 4, 0, 'air'),
-        (-5, 4, -1, 'polished_andesite_stairs[facing=north,half=bottom,shape=outer_right,waterlogged=false]'),
-        (-5, 4, -2, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-5, 4, -3, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-5, 4, -4, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-5, 4, -5, 'polished_andesite_stairs[facing=east,half=bottom,shape=outer_right,waterlogged=false]'),
-        (-5, 4, -6, 'air'),
-        (-6, 0, 0, 'air'),
-        (-6, 0, -1, 'air'),
-        (-6, 0, -2, 'air'),
-        (-6, 0, -3, 'air'),
-        (-6, 0, -4, 'air'),
-        (-6, 0, -5, 'air'),
-        (-6, 0, -6, 'air'),
-        (-6, 1, 0, 'air'),
-        (-6, 1, -1, 'air'),
-        (-6, 1, -2, 'air'),
-        (-6, 1, -3, 'air'),
-        (-6, 1, -4, 'air'),
-        (-6, 1, -5, 'air'),
-        (-6, 1, -6, 'air'),
-        (-6, 2, 0, 'air'),
-        (-6, 2, -1, 'air'),
-        (-6, 2, -2, 'air'),
-        (-6, 2, -3, 'air'),
-        (-6, 2, -4, 'air'),
-        (-6, 2, -5, 'air'),
-        (-6, 2, -6, 'air'),
-        (-6, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=outer_right,waterlogged=false]'),
-        (-6, 3, -1, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-6, 3, -2, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-6, 3, -3, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-6, 3, -4, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-6, 3, -5, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-6, 3, -6, 'polished_andesite_stairs[facing=east,half=bottom,shape=outer_right,waterlogged=false]'),
-        (-6, 4, 0, 'air'),
-        (-6, 4, -1, 'air'),
-        (-6, 4, -2, 'air'),
-        (-6, 4, -3, 'air'),
-        (-6, 4, -4, 'air'),
-        (-6, 4, -5, 'air'),
-        (-6, 4, -6, 'diamond_block')]
+        [
+            ['diamond_block', 'air', 'air', 'air', 'air', 'air', 'air'],
+            ['air', 'air', 'air', 'air', 'air', 'air', 'air'],
+            ['air', 'air', 'air', 'air', 'air', 'air', 'air'],
+            ['polished_andesite_stairs[facing=north,half=bottom,shape=outer_left,waterlogged=false]',
+             'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=west,half=bottom,shape=outer_left,waterlogged=false]'],
+            ['air', 'air', 'air', 'air', 'air', 'air', 'air'],
+        ],
+        [
+            ['air', 'oak_log[axis=y]', 'oak_planks',
+             'oak_door[facing=west,half=lower,hinge=right,open=false,powered=false]', 'oak_planks', 'oak_log[axis=y]',
+             'air'],
+            ['air', 'oak_log[axis=y]', 'glass', 'oak_door[facing=west,half=upper,hinge=right,open=false,powered=false]',
+             'glass', 'oak_log[axis=y]', 'air'],
+            ['air', 'oak_log[axis=y]', 'oak_planks', 'oak_planks', 'oak_planks', 'oak_log[axis=y]', 'air'],
+            ['polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'oak_log[axis=y]',
+             'cobblestone', 'cobblestone', 'cobblestone', 'oak_log[axis=y]',
+             'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'],
+            ['air', 'polished_andesite_stairs[facing=west,half=bottom,shape=outer_right,waterlogged=false]',
+             'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=west,half=bottom,shape=outer_left,waterlogged=false]', 'air'],
+        ],
+        [
+            ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air'],
+            ['air', 'glass', 'air', 'air', 'air', 'glass', 'air'],
+            ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air'],
+            ['polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'cobblestone',
+             'air', 'air', 'air', 'cobblestone',
+             'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'],
+            ['air', 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite', 'polished_andesite', 'polished_andesite',
+             'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]', 'air'],
+        ],
+        [
+            ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air'],
+            ['air', 'glass', 'air', 'air', 'air', 'glass', 'air'],
+            ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air'],
+            ['polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'cobblestone',
+             'air', 'air', 'air', 'cobblestone',
+             'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'],
+            ['air', 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite', 'polished_andesite', 'polished_andesite',
+             'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]', 'air'],
+        ],
+        [
+            ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air'],
+            ['air', 'glass', 'air', 'air', 'air', 'glass', 'air'],
+            ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air'],
+            ['polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'cobblestone',
+             'air', 'air', 'air', 'cobblestone',
+             'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'],
+            ['air', 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite', 'polished_andesite', 'polished_andesite',
+             'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]', 'air'],
+        ],
+        [
+            ['air', 'oak_log[axis=y]', 'oak_planks', 'oak_planks', 'oak_planks', 'oak_log[axis=y]', 'air'],
+            ['air', 'oak_log[axis=y]', 'glass', 'glass', 'glass', 'oak_log[axis=y]', 'air'],
+            ['air', 'oak_log[axis=y]', 'oak_planks', 'oak_planks', 'oak_planks', 'oak_log[axis=y]', 'air'],
+            ['polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'oak_log[axis=y]',
+             'cobblestone', 'cobblestone', 'cobblestone', 'oak_log[axis=y]',
+             'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'],
+            ['air', 'polished_andesite_stairs[facing=north,half=bottom,shape=outer_right,waterlogged=false]',
+             'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=east,half=bottom,shape=outer_right,waterlogged=false]', 'air'],
+        ],
+        [
+            ['air', 'air', 'air', 'air', 'air', 'air', 'air'],
+            ['air', 'air', 'air', 'air', 'air', 'air', 'air'],
+            ['air', 'air', 'air', 'air', 'air', 'air', 'air'],
+            ['polished_andesite_stairs[facing=north,half=bottom,shape=outer_right,waterlogged=false]',
+             'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]',
+             'polished_andesite_stairs[facing=east,half=bottom,shape=outer_right,waterlogged=false]'],
+            ['air', 'air', 'air', 'air', 'air', 'air', 'diamond_block'],
+        ],
+    ]
 
-    for rel_x, rel_y, rel_z, block_name in structure:
-        x = start_coordinate.x + rel_x
-        y = start_coordinate.y + rel_y
-        z = start_coordinate.z + rel_z
-        editor.placeBlock((x, y, z), Block(block_name))
+    # Initialize the iterator
+    print("Building House")
+    # initial coords
+    x = start[0]
+    y = start[1]
+    z = start[2]
+    # builds structure in layers pos to neg X, each layer is built in rows from bottom to top, rows built pos to neg Z
+    for layer in structure:
+        for row in layer:
+            for block in row:
+                editor.placeBlock(ivec3(x, y, z), Block(block))
+                print("placed", str(block), "at ", x, y, z)
+                z = z - 1  # moves to next block in row
+            z = start[2]  # resets block
+            y = y + 1  # moves to next row in layer
+        y = start[1]  # resets row
+        x = x - 1  # moves to next layer in structure
 
-
-"""read_house
-arr = [][][]
-for x from - to +
-    for y from - to +
-        for z from - to +
-            arr[x][y][z] = getblock(x,y,z)
-
-build_house
-for x from - to +
-    for y from - to +
-        for z from - to +
-             placeblock(x,y,z, arr[x][y][z])"""
 
 corner1 = ivec3(-14, 69, 153)
 corner2 = ivec3(-20, 73, 147)
 
-print_blocks_in_cube(editor, corner1, corner2)
+print_structure_list(editor, corner1, corner2)
 
 start = ivec3(-6, 70, 137)
 
