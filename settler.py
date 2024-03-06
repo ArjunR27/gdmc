@@ -204,19 +204,19 @@ step = 1
 max_water_percentage = .3
 
 # Iterate over building area with step and search for plots
-for x_start in range(0, len(heightmap) - plot_size + 1, step):
-    for z_start in range(0, len(heightmap[0]) - plot_size + 1, step):
+for x_offset in range(0, len(heightmap) - plot_size + 1, step):
+    for z_offset in range(0, len(heightmap[0]) - plot_size + 1, step):
 
         # Extract a potential plot, get std and water_percentage
-        plot = heightmap[x_start: x_start + plot_size, z_start: z_start + plot_size]
+        plot = heightmap[x_offset: x_offset + plot_size, z_offset: z_offset + plot_size]
         std = np.std(plot)
-        water_plot = water_array[x_start: x_start + plot_size, z_start: z_start + plot_size]
+        water_plot = water_array[x_offset: x_offset + plot_size, z_offset: z_offset + plot_size]
         water_percentage = 3 * np.count_nonzero(water_plot == 1) / water_plot.size * 100
 
         # If there is a new lowest std and acceptable water percentage, new best plot found
         if std < lowest_std and water_percentage < max_water_percentage:
             lowest_std = std
-            best_plot = BuildingPlot(plot, begin.x + x_start, begin.z + z_start, std)
+            best_plot = BuildingPlot(plot, begin.x + x_offset, begin.z + z_offset, std)
             best_plot_water = water_plot
 
 # Define corners for new plot
@@ -236,18 +236,18 @@ building_size = 5
 step = 1
 
 # Iterate over building area with step and search for plots
-for x_start in range(0, best_plot.plot_len - building_size + 1, step):
-    for z_start in range(0, best_plot.plot_len - building_size + 1, step):
+for x_offset in range(0, best_plot.plot_len - building_size + 1, step):
+    for z_offset in range(0, best_plot.plot_len - building_size + 1, step):
 
         # Extract a potential plot, get std and water_percentage
-        plot = best_plot.plot[x_start: x_start + building_size, z_start: z_start + building_size]
+        plot = best_plot.plot[x_offset: x_offset + building_size, z_offset: z_offset + building_size]
         std = np.std(plot)
-        water_plot = best_plot_water[x_start: x_start + building_size, z_start: z_start + building_size]
+        water_plot = best_plot_water[x_offset: x_offset + building_size, z_offset: z_offset + building_size]
         water_percentage = np.count_nonzero(water_plot == 1) / water_plot.size * 100
 
         # If there is no water
         if water_percentage == 0:
-            new_plot = BuildingPlot(plot, negative[0] + x_start, negative[2] + z_start, std)
+            new_plot = BuildingPlot(plot, negative[0] + x_offset, negative[2] + z_offset, std)
             building_plots.append(new_plot)
 
 # Sort plots by standard deviation and filter overlapping plots
