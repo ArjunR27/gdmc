@@ -82,16 +82,16 @@ groundCenter = addY(buildRect.center, meanHeight)
 geometry.placeRectOutline(editor, buildRect, 100, Block("blue_concrete"))
 
 
-def loopArea(begin: Vec3iLike, end: Optional[Vec3iLike] = None):
-    """Yields all points between <begin> and <end> (end-inclusive).
-    If <end> is not given, yields all points between (0,0,0) and <begin>."""
-    if end is None:
-        begin, end = (0, 0, 0), begin
-
-    for x in range(begin[0], end[0] + nonZeroSign(end[0] - begin[0]), nonZeroSign(end[0] - begin[0])):
-        for y in range(begin[1], end[1] + nonZeroSign(end[1] - begin[1]), nonZeroSign(end[1] - begin[1])):
-            for z in range(begin[2], end[2] + nonZeroSign(end[2] - begin[2]), nonZeroSign(end[2] - begin[2])):
-                yield ivec3(x, y, z)
+# def loopArea(begin: Vec3iLike, end: Optional[Vec3iLike] = None):
+#     """Yields all points between <begin> and <end> (end-inclusive).
+#     If <end> is not given, yields all points between (0,0,0) and <begin>."""
+#     if end is None:
+#         begin, end = (0, 0, 0), begin
+#
+#     for x in range(begin[0], end[0] + nonZeroSign(end[0] - begin[0]), nonZeroSign(end[0] - begin[0])):
+#         for y in range(begin[1], end[1] + nonZeroSign(end[1] - begin[1]), nonZeroSign(end[1] - begin[1])):
+#             for z in range(begin[2], end[2] + nonZeroSign(end[2] - begin[2]), nonZeroSign(end[2] - begin[2])):
+#                 yield ivec3(x, y, z)
 
 
 def print_structure_list(editor, corner1, corner2):
@@ -124,7 +124,8 @@ def print_structure_list(editor, corner1, corner2):
     print("]")"""
 
 
-def build_house(editor, start):
+def build_house(editor, start, direction="east"):
+    global facing_mapping
     structure = [
         [
             ['diamond_block', 'air', 'air', 'air', 'air', 'air', 'air'],
@@ -216,18 +217,46 @@ def build_house(editor, start):
         ],
     ]
 
-    # Initialize the iterator
-    print("Building House")
+    # convert to numpy array
+    structure = np.array(structure)
+
+    # update rotation of structs and rotation mapping for blocks
+    if direction == "south":
+        structure = np.rot90(structure, axes=(0, 2))
+        facing_mapping = {"north": "east", "west": "north", "south": "west", "east": "south"}
+    if direction == "west":
+        structure = np.flip(structure, 0)
+        facing_mapping = {"north": "north", "west": "east", "south": "south", "east": "west"}
+    if direction == "north":
+        structure = np.rot90(structure, k=-1, axes=(0, 2))
+        facing_mapping = {"north": "west", "west": "south", "south": "east", "east": "north"}
+
     # initial coords
+
     x = start[0]
     y = start[1]
     z = start[2]
+
     # builds structure in layers pos to neg X, each layer is built in rows from bottom to top, rows built pos to neg Z
     for layer in structure:
         for row in layer:
             for block in row:
-                editor.placeBlock(ivec3(x, y, z), Block(block))
-                print("placed", str(block), "at ", x, y, z)
+                # Extract block information
+                block_info = block.split('[')
+                block_name = block_info[0]
+                block_properties = '[' + block_info[1] if len(block_info) > 1 else ''
+
+                # Handle rotation of directional blocks
+                if 'facing' in block_properties:
+                    # Extract current facing direction and update properties
+                    facing_info = block_properties.split('facing=')[1].split(',')[0]
+                    facing_direction = facing_info.replace("]", "").replace("'", "").strip()
+                    updated_facing = facing_mapping.get(facing_direction, facing_direction)
+                    block_properties = '[' + 'facing=' + updated_facing + ',' + block_properties.split(',', 1)[1]
+
+                # Place the block with the updated information
+                editor.placeBlock(ivec3(x, y, z), Block(block_name + block_properties))
+                print("placed", str(block_name + block_properties), "at ", x, y, z)
                 z = z - 1  # moves to next block in row
             z = start[2]  # resets block
             y = y + 1  # moves to next row in layer
@@ -242,4 +271,4 @@ print_structure_list(editor, corner1, corner2)
 
 start = ivec3(-6, 70, 137)
 
-build_house(editor, start)
+build_house(editor, start, "north")
