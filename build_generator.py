@@ -106,16 +106,19 @@ def write_structure_to_file(filename, corner1, corner2):
     # Adjust the filename to include the directory path
     filepath = os.path.join(directory, filename)
 
+    corner1_c = [max(corner1[0], corner2[0]), min(corner1[1], corner2[1]), max(corner1[2], corner2[2])]
+    corner2_c = [min(corner1[0], corner2[0]), max(corner1[1], corner2[1]), min(corner1[2], corner2[2])]
+
     with open(filepath, 'w') as file:
         file.write("[\n")
-        for x in range(corner1[0], corner2[0] + nonZeroSign(corner2[0] - corner1[0]),
-                       nonZeroSign(corner2[0] - corner1[0])):
+        for x in range(corner1_c[0], corner2_c[0] + nonZeroSign(corner2_c[0] - corner1_c[0]),
+                       nonZeroSign(corner2_c[0] - corner1_c[0])):
             file.write("    [\n")
-            for y in range(corner1[1], corner2[1] + nonZeroSign(corner2[1] - corner1[1]),
-                           nonZeroSign(corner2[1] - corner1[1])):
+            for y in range(corner1_c[1], corner2_c[1] + nonZeroSign(corner2_c[1] - corner1_c[1]),
+                           nonZeroSign(corner2_c[1] - corner1_c[1])):
                 file.write("        [")
-                for z in range(corner1[2], corner2[2] + nonZeroSign(corner2[2] - corner1[2]),
-                               nonZeroSign(corner2[2] - corner1[2])):
+                for z in range(corner1_c[2], corner2_c[2] + nonZeroSign(corner2_c[2] - corner1_c[2]),
+                               nonZeroSign(corner2_c[2] - corner1_c[2])):
                     vec = ivec3(x, y, z)
                     block = str(editor.getBlock(vec))
                     # Extracting the block name without the minecraft: prefix
@@ -140,8 +143,8 @@ def read_structure_from_file(filename):
     return structure_array
 
 
-def build_house(editor, filename, start, direction="east"):
-    structure = read_structure_from_file(filename)
+def build_house(editor, filepath, start, direction="east"):
+    structure = read_structure_from_file(filepath)
 
     # update rotation of structs and rotation mapping for blocks
     if direction == "south":
@@ -164,13 +167,17 @@ def build_house(editor, filename, start, direction="east"):
     for layer in structure:
         for row in layer:
             for block in row:
+                if block == "air":  # skips to next block if air
+                    z = z - 1
+                    continue
                 # Extract block information
                 block_info = block.split('[')
                 block_name = block_info[0]
+                print(block_name)
                 block_properties = '[' + block_info[1] if len(block_info) > 1 else ''
 
                 # Handle rotation of directional blocks
-                if direction != "east":
+                if direction != "east" and 'facing=' in block_properties:
                     # Extract current facing direction and update properties
                     facing_info = block_properties.split('facing=')[1].split(',')[0]
                     facing_direction = facing_info.replace("]", "").replace("'", "").strip()
@@ -187,10 +194,13 @@ def build_house(editor, filename, start, direction="east"):
         x = x - 1  # moves to next layer in structure
 
 
-corner1 = ivec3(-14, 69, 153)
-corner2 = ivec3(-20, 73, 147)
+# corner1 = ivec3(-14, 69, 153)
+# corner2 = ivec3(-20, 73, 147)
+
+corner1 = ivec3(-14, 69, 147)
+corner2 = ivec3(-20, 73, 153)
 
 start = ivec3(-6, 70, 137)
 
 write_structure_to_file("basic_house.txt", corner1, corner2)
-build_house(editor, "./Schematics/basic_house.txt", start, "east")
+build_house(editor, "./Schematics/basic_house.txt", start, "south")
