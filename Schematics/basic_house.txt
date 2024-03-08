@@ -1,0 +1,51 @@
+[
+    [
+        ['diamond_block', 'air', 'air', 'air', 'air', 'air', 'emerald_block', ],
+        ['air', 'air', 'air', 'air', 'air', 'air', 'air', ],
+        ['air', 'air', 'air', 'air', 'air', 'air', 'air', ],
+        ['polished_andesite_stairs[facing=north,half=bottom,shape=outer_left,waterlogged=false]', 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=west,half=bottom,shape=outer_left,waterlogged=false]', ],
+        ['air', 'air', 'air', 'air', 'air', 'air', 'air', ],
+    ],
+    [
+        ['air', 'oak_log[axis=y]', 'oak_planks', 'oak_door[facing=west,half=lower,hinge=right,open=false,powered=false]', 'oak_planks', 'oak_log[axis=y]', 'air', ],
+        ['air', 'oak_log[axis=y]', 'glass', 'oak_door[facing=west,half=upper,hinge=right,open=false,powered=false]', 'glass', 'oak_log[axis=y]', 'air', ],
+        ['air', 'oak_log[axis=y]', 'oak_planks', 'oak_planks', 'oak_planks', 'oak_log[axis=y]', 'air', ],
+        ['polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'oak_log[axis=y]', 'cobblestone', 'cobblestone', 'cobblestone', 'oak_log[axis=y]', 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]', ],
+        ['air', 'polished_andesite_stairs[facing=west,half=bottom,shape=outer_right,waterlogged=false]', 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=west,half=bottom,shape=outer_left,waterlogged=false]', 'air', ],
+    ],
+    [
+        ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air', ],
+        ['air', 'glass', 'air', 'air', 'air', 'glass', 'air', ],
+        ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air', ],
+        ['polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'cobblestone', 'air', 'air', 'air', 'cobblestone', 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]', ],
+        ['air', 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite', 'polished_andesite', 'polished_andesite', 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]', 'air', ],
+    ],
+    [
+        ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air', ],
+        ['air', 'glass', 'air', 'air', 'air', 'glass', 'air', ],
+        ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air', ],
+        ['polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'cobblestone', 'air', 'air', 'air', 'cobblestone', 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]', ],
+        ['air', 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite', 'polished_andesite', 'polished_andesite', 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]', 'air', ],
+    ],
+    [
+        ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air', ],
+        ['air', 'glass', 'air', 'air', 'air', 'glass', 'air', ],
+        ['air', 'oak_planks', 'air', 'air', 'air', 'oak_planks', 'air', ],
+        ['polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'cobblestone', 'air', 'air', 'air', 'cobblestone', 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]', ],
+        ['air', 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite', 'polished_andesite', 'polished_andesite', 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]', 'air', ],
+    ],
+    [
+        ['air', 'oak_log[axis=y]', 'oak_planks', 'oak_planks', 'oak_planks', 'oak_log[axis=y]', 'air', ],
+        ['air', 'oak_log[axis=y]', 'glass', 'glass', 'glass', 'oak_log[axis=y]', 'air', ],
+        ['air', 'oak_log[axis=y]', 'oak_planks', 'oak_planks', 'oak_planks', 'oak_log[axis=y]', 'air', ],
+        ['polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]', 'oak_log[axis=y]', 'cobblestone', 'cobblestone', 'cobblestone', 'oak_log[axis=y]', 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]', ],
+        ['air', 'polished_andesite_stairs[facing=north,half=bottom,shape=outer_right,waterlogged=false]', 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=east,half=bottom,shape=outer_right,waterlogged=false]', 'air', ],
+    ],
+    [
+        ['air', 'air', 'air', 'air', 'air', 'air', 'air', ],
+        ['air', 'air', 'air', 'air', 'air', 'air', 'air', ],
+        ['air', 'air', 'air', 'air', 'air', 'air', 'air', ],
+        ['polished_andesite_stairs[facing=north,half=bottom,shape=outer_right,waterlogged=false]', 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]', 'polished_andesite_stairs[facing=east,half=bottom,shape=outer_right,waterlogged=false]', ],
+        ['emerald_block', 'air', 'air', 'air', 'air', 'air', 'diamond_block', ],
+    ],
+]

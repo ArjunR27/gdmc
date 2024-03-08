@@ -24,6 +24,7 @@ from gdpc.minecraft_tools import signBlock
 from gdpc.editor_tools import placeContainerBlock
 from gdpc.geometry import placeBox, placeCuboid
 from foundationPlacement import createFoundation
+import ast
 
 # The minimum build area size in the XZ-plane
 MIN_BUILD_AREA_SIZE = ivec2(35, 35)
@@ -81,312 +82,125 @@ groundCenter = addY(buildRect.center, meanHeight)
 
 geometry.placeRectOutline(editor, buildRect, 100, Block("blue_concrete"))
 
-
-def loopArea(begin: Vec3iLike, end: Optional[Vec3iLike] = None):
-    """Yields all points between <begin> and <end> (end-inclusive).
-    If <end> is not given, yields all points between (0,0,0) and <begin>."""
-    if end is None:
-        begin, end = (0, 0, 0), begin
-
-    for x in range(begin[0], end[0] + nonZeroSign(end[0] - begin[0]), nonZeroSign(end[0] - begin[0])):
-        for y in range(begin[1], end[1] + nonZeroSign(end[1] - begin[1]), nonZeroSign(end[1] - begin[1])):
-            for z in range(begin[2], end[2] + nonZeroSign(end[2] - begin[2]), nonZeroSign(end[2] - begin[2])):
-                yield ivec3(x, y, z)
-
-
-def print_blocks_in_cube(editor, corner1, corner2):
-    # Initialize the structure list
-    structure = []
-
-    # Loop through all the blocks in the cube and append to the structure list
-    for vec in loopArea(corner1, corner2):
-        # Calculate relative positions
-        relative_position = ivec3(vec.x - corner1.x, vec.y - corner1.y, vec.z - corner1.z)
-        block = str(editor.getBlock(vec))
-        # Extracting the block name without the minecraft: prefix
-        block_name = block.split(":")[-1]  # Assuming block format is 'minecraft:block_name'
-        structure.append((relative_position.x, relative_position.y, relative_position.z, block_name))
-
-    # Print the structure list
-    print("structure = [")
-    for entry in structure:
-        print(f'    {entry},')
-    print("]")
+# def loopArea(begin: Vec3iLike, end: Optional[Vec3iLike] = None):
+#     """Yields all points between <begin> and <end> (end-inclusive).
+#     If <end> is not given, yields all points between (0,0,0) and <begin>."""
+#     if end is None:
+#         begin, end = (0, 0, 0), begin
+#
+#     for x in range(begin[0], end[0] + nonZeroSign(end[0] - begin[0]), nonZeroSign(end[0] - begin[0])):
+#         for y in range(begin[1], end[1] + nonZeroSign(end[1] - begin[1]), nonZeroSign(end[1] - begin[1])):
+#             for z in range(begin[2], end[2] + nonZeroSign(end[2] - begin[2]), nonZeroSign(end[2] - begin[2])):
+#                 yield ivec3(x, y, z)
 
 
-def build_house(editor, start_coordinate):
-    structure = [
-        (0, 0, 0, 'diamond_block'),
-        (0, 0, -1, 'air'),
-        (0, 0, -2, 'air'),
-        (0, 0, -3, 'air'),
-        (0, 0, -4, 'air'),
-        (0, 0, -5, 'air'),
-        (0, 0, -6, 'air'),
-        (0, 1, 0, 'air'),
-        (0, 1, -1, 'air'),
-        (0, 1, -2, 'air'),
-        (0, 1, -3, 'air'),
-        (0, 1, -4, 'air'),
-        (0, 1, -5, 'air'),
-        (0, 1, -6, 'air'),
-        (0, 2, 0, 'air'),
-        (0, 2, -1, 'air'),
-        (0, 2, -2, 'air'),
-        (0, 2, -3, 'air'),
-        (0, 2, -4, 'air'),
-        (0, 2, -5, 'air'),
-        (0, 2, -6, 'air'),
-        (0, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=outer_left,waterlogged=false]'),
-        (0, 3, -1, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (0, 3, -2, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (0, 3, -3, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (0, 3, -4, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (0, 3, -5, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (0, 3, -6, 'polished_andesite_stairs[facing=west,half=bottom,shape=outer_left,waterlogged=false]'),
-        (0, 4, 0, 'air'),
-        (0, 4, -1, 'air'),
-        (0, 4, -2, 'air'),
-        (0, 4, -3, 'air'),
-        (0, 4, -4, 'air'),
-        (0, 4, -5, 'air'),
-        (0, 4, -6, 'air'),
-        (-1, 0, 0, 'air'),
-        (-1, 0, -1, 'oak_log[axis=y]'),
-        (-1, 0, -2, 'oak_planks'),
-        (-1, 0, -3, 'oak_door[facing=west,half=lower,hinge=right,open=false,powered=false]'),
-        (-1, 0, -4, 'oak_planks'),
-        (-1, 0, -5, 'oak_log[axis=y]'),
-        (-1, 0, -6, 'air'),
-        (-1, 1, 0, 'air'),
-        (-1, 1, -1, 'oak_log[axis=y]'),
-        (-1, 1, -2, 'glass'),
-        (-1, 1, -3, 'oak_door[facing=west,half=upper,hinge=right,open=false,powered=false]'),
-        (-1, 1, -4, 'glass'),
-        (-1, 1, -5, 'oak_log[axis=y]'),
-        (-1, 1, -6, 'air'),
-        (-1, 2, 0, 'air'),
-        (-1, 2, -1, 'oak_log[axis=y]'),
-        (-1, 2, -2, 'oak_planks'),
-        (-1, 2, -3, 'oak_planks'),
-        (-1, 2, -4, 'oak_planks'),
-        (-1, 2, -5, 'oak_log[axis=y]'),
-        (-1, 2, -6, 'air'),
-        (-1, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-1, 3, -1, 'oak_log[axis=y]'),
-        (-1, 3, -2, 'cobblestone'),
-        (-1, 3, -3, 'cobblestone'),
-        (-1, 3, -4, 'cobblestone'),
-        (-1, 3, -5, 'oak_log[axis=y]'),
-        (-1, 3, -6, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-1, 4, 0, 'air'),
-        (-1, 4, -1, 'polished_andesite_stairs[facing=west,half=bottom,shape=outer_right,waterlogged=false]'),
-        (-1, 4, -2, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (-1, 4, -3, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (-1, 4, -4, 'polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]'),
-        (-1, 4, -5, 'polished_andesite_stairs[facing=west,half=bottom,shape=outer_left,waterlogged=false]'),
-        (-1, 4, -6, 'air'),
-        (-2, 0, 0, 'air'),
-        (-2, 0, -1, 'oak_planks'),
-        (-2, 0, -2, 'air'),
-        (-2, 0, -3, 'air'),
-        (-2, 0, -4, 'air'),
-        (-2, 0, -5, 'oak_planks'),
-        (-2, 0, -6, 'air'),
-        (-2, 1, 0, 'air'),
-        (-2, 1, -1, 'glass'),
-        (-2, 1, -2, 'air'),
-        (-2, 1, -3, 'air'),
-        (-2, 1, -4, 'air'),
-        (-2, 1, -5, 'glass'),
-        (-2, 1, -6, 'air'),
-        (-2, 2, 0, 'air'),
-        (-2, 2, -1, 'oak_planks'),
-        (-2, 2, -2, 'air'),
-        (-2, 2, -3, 'air'),
-        (-2, 2, -4, 'air'),
-        (-2, 2, -5, 'oak_planks'),
-        (-2, 2, -6, 'air'),
-        (-2, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-2, 3, -1, 'cobblestone'),
-        (-2, 3, -2, 'air'),
-        (-2, 3, -3, 'air'),
-        (-2, 3, -4, 'air'),
-        (-2, 3, -5, 'cobblestone'),
-        (-2, 3, -6, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-2, 4, 0, 'air'),
-        (-2, 4, -1, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-2, 4, -2, 'polished_andesite'),
-        (-2, 4, -3, 'polished_andesite'),
-        (-2, 4, -4, 'polished_andesite'),
-        (-2, 4, -5, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-2, 4, -6, 'air'),
-        (-3, 0, 0, 'air'),
-        (-3, 0, -1, 'oak_planks'),
-        (-3, 0, -2, 'air'),
-        (-3, 0, -3, 'air'),
-        (-3, 0, -4, 'air'),
-        (-3, 0, -5, 'oak_planks'),
-        (-3, 0, -6, 'air'),
-        (-3, 1, 0, 'air'),
-        (-3, 1, -1, 'glass'),
-        (-3, 1, -2, 'air'),
-        (-3, 1, -3, 'air'),
-        (-3, 1, -4, 'air'),
-        (-3, 1, -5, 'glass'),
-        (-3, 1, -6, 'air'),
-        (-3, 2, 0, 'air'),
-        (-3, 2, -1, 'oak_planks'),
-        (-3, 2, -2, 'air'),
-        (-3, 2, -3, 'air'),
-        (-3, 2, -4, 'air'),
-        (-3, 2, -5, 'oak_planks'),
-        (-3, 2, -6, 'air'),
-        (-3, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-3, 3, -1, 'cobblestone'),
-        (-3, 3, -2, 'air'),
-        (-3, 3, -3, 'air'),
-        (-3, 3, -4, 'air'),
-        (-3, 3, -5, 'cobblestone'),
-        (-3, 3, -6, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-3, 4, 0, 'air'),
-        (-3, 4, -1, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-3, 4, -2, 'polished_andesite'),
-        (-3, 4, -3, 'polished_andesite'),
-        (-3, 4, -4, 'polished_andesite'),
-        (-3, 4, -5, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-3, 4, -6, 'air'),
-        (-4, 0, 0, 'air'),
-        (-4, 0, -1, 'oak_planks'),
-        (-4, 0, -2, 'air'),
-        (-4, 0, -3, 'air'),
-        (-4, 0, -4, 'air'),
-        (-4, 0, -5, 'oak_planks'),
-        (-4, 0, -6, 'air'),
-        (-4, 1, 0, 'air'),
-        (-4, 1, -1, 'glass'),
-        (-4, 1, -2, 'air'),
-        (-4, 1, -3, 'air'),
-        (-4, 1, -4, 'air'),
-        (-4, 1, -5, 'glass'),
-        (-4, 1, -6, 'air'),
-        (-4, 2, 0, 'air'),
-        (-4, 2, -1, 'oak_planks'),
-        (-4, 2, -2, 'air'),
-        (-4, 2, -3, 'air'),
-        (-4, 2, -4, 'air'),
-        (-4, 2, -5, 'oak_planks'),
-        (-4, 2, -6, 'air'),
-        (-4, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-4, 3, -1, 'cobblestone'),
-        (-4, 3, -2, 'air'),
-        (-4, 3, -3, 'air'),
-        (-4, 3, -4, 'air'),
-        (-4, 3, -5, 'cobblestone'),
-        (-4, 3, -6, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-4, 4, 0, 'air'),
-        (-4, 4, -1, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-4, 4, -2, 'polished_andesite'),
-        (-4, 4, -3, 'polished_andesite'),
-        (-4, 4, -4, 'polished_andesite'),
-        (-4, 4, -5, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-4, 4, -6, 'air'),
-        (-5, 0, 0, 'air'),
-        (-5, 0, -1, 'oak_log[axis=y]'),
-        (-5, 0, -2, 'oak_planks'),
-        (-5, 0, -3, 'oak_planks'),
-        (-5, 0, -4, 'oak_planks'),
-        (-5, 0, -5, 'oak_log[axis=y]'),
-        (-5, 0, -6, 'air'),
-        (-5, 1, 0, 'air'),
-        (-5, 1, -1, 'oak_log[axis=y]'),
-        (-5, 1, -2, 'glass'),
-        (-5, 1, -3, 'glass'),
-        (-5, 1, -4, 'glass'),
-        (-5, 1, -5, 'oak_log[axis=y]'),
-        (-5, 1, -6, 'air'),
-        (-5, 2, 0, 'air'),
-        (-5, 2, -1, 'oak_log[axis=y]'),
-        (-5, 2, -2, 'oak_planks'),
-        (-5, 2, -3, 'oak_planks'),
-        (-5, 2, -4, 'oak_planks'),
-        (-5, 2, -5, 'oak_log[axis=y]'),
-        (-5, 2, -6, 'air'),
-        (-5, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]'),
-        (-5, 3, -1, 'oak_log[axis=y]'),
-        (-5, 3, -2, 'cobblestone'),
-        (-5, 3, -3, 'cobblestone'),
-        (-5, 3, -4, 'cobblestone'),
-        (-5, 3, -5, 'oak_log[axis=y]'),
-        (-5, 3, -6, 'polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]'),
-        (-5, 4, 0, 'air'),
-        (-5, 4, -1, 'polished_andesite_stairs[facing=north,half=bottom,shape=outer_right,waterlogged=false]'),
-        (-5, 4, -2, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-5, 4, -3, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-5, 4, -4, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-5, 4, -5, 'polished_andesite_stairs[facing=east,half=bottom,shape=outer_right,waterlogged=false]'),
-        (-5, 4, -6, 'air'),
-        (-6, 0, 0, 'air'),
-        (-6, 0, -1, 'air'),
-        (-6, 0, -2, 'air'),
-        (-6, 0, -3, 'air'),
-        (-6, 0, -4, 'air'),
-        (-6, 0, -5, 'air'),
-        (-6, 0, -6, 'air'),
-        (-6, 1, 0, 'air'),
-        (-6, 1, -1, 'air'),
-        (-6, 1, -2, 'air'),
-        (-6, 1, -3, 'air'),
-        (-6, 1, -4, 'air'),
-        (-6, 1, -5, 'air'),
-        (-6, 1, -6, 'air'),
-        (-6, 2, 0, 'air'),
-        (-6, 2, -1, 'air'),
-        (-6, 2, -2, 'air'),
-        (-6, 2, -3, 'air'),
-        (-6, 2, -4, 'air'),
-        (-6, 2, -5, 'air'),
-        (-6, 2, -6, 'air'),
-        (-6, 3, 0, 'polished_andesite_stairs[facing=north,half=bottom,shape=outer_right,waterlogged=false]'),
-        (-6, 3, -1, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-6, 3, -2, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-6, 3, -3, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-6, 3, -4, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-6, 3, -5, 'polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]'),
-        (-6, 3, -6, 'polished_andesite_stairs[facing=east,half=bottom,shape=outer_right,waterlogged=false]'),
-        (-6, 4, 0, 'air'),
-        (-6, 4, -1, 'air'),
-        (-6, 4, -2, 'air'),
-        (-6, 4, -3, 'air'),
-        (-6, 4, -4, 'air'),
-        (-6, 4, -5, 'air'),
-        (-6, 4, -6, 'diamond_block')]
-
-    for rel_x, rel_y, rel_z, block_name in structure:
-        x = start_coordinate.x + rel_x
-        y = start_coordinate.y + rel_y
-        z = start_coordinate.z + rel_z
-        editor.placeBlock((x, y, z), Block(block_name))
+import os
 
 
-"""read_house
-arr = [][][]
-for x from - to +
-    for y from - to +
-        for z from - to +
-            arr[x][y][z] = getblock(x,y,z)
+def write_structure_to_file(filename, corner1, corner2):
+    # Ensure the Schematics directory exists
+    directory = "Schematics"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
-build_house
-for x from - to +
-    for y from - to +
-        for z from - to +
-             placeblock(x,y,z, arr[x][y][z])"""
+    # Adjust the filename to include the directory path
+    filepath = os.path.join(directory, filename)
 
-corner1 = ivec3(-14, 69, 153)
-corner2 = ivec3(-20, 73, 147)
+    corner1_c = [max(corner1[0], corner2[0]), min(corner1[1], corner2[1]), max(corner1[2], corner2[2])]
+    corner2_c = [min(corner1[0], corner2[0]), max(corner1[1], corner2[1]), min(corner1[2], corner2[2])]
 
-print_blocks_in_cube(editor, corner1, corner2)
+    with open(filepath, 'w') as file:
+        file.write("[\n")
+        for x in range(corner1_c[0], corner2_c[0] + nonZeroSign(corner2_c[0] - corner1_c[0]),
+                       nonZeroSign(corner2_c[0] - corner1_c[0])):
+            file.write("    [\n")
+            for y in range(corner1_c[1], corner2_c[1] + nonZeroSign(corner2_c[1] - corner1_c[1]),
+                           nonZeroSign(corner2_c[1] - corner1_c[1])):
+                file.write("        [")
+                for z in range(corner1_c[2], corner2_c[2] + nonZeroSign(corner2_c[2] - corner1_c[2]),
+                               nonZeroSign(corner2_c[2] - corner1_c[2])):
+                    vec = ivec3(x, y, z)
+                    block = str(editor.getBlock(vec))
+                    # Extracting the block name without the minecraft: prefix
+                    block_name = block.split(":")[-1]  # Assuming block format is 'minecraft:block_name'
+                    file.write(f"'{block_name}', ")
+                file.write("],\n")
+            file.write("    ],\n")
+        file.write("]\n")
+    print(f"Structure written to {filepath}")
+
+
+def read_structure_from_file(filename):
+    with open(filename, 'r') as file:
+        content = file.read()
+
+    # Use ast.literal_eval to safely evaluate the string representation of the array
+    structure_list = ast.literal_eval(content)
+
+    # Convert the nested lists to a NumPy array
+    structure_array = np.array(structure_list, dtype=object)
+
+    return structure_array
+
+
+def build_house(editor, filepath, start, direction="east"):
+    structure = read_structure_from_file(filepath)
+
+    # update rotation of structs and rotation mapping for blocks
+    if direction == "south":
+        structure = np.rot90(structure, axes=(0, 2))
+        facing_mapping = {"north": "east", "west": "north", "south": "west", "east": "south"}
+    if direction == "west":
+        structure = np.flip(structure, 0)
+        facing_mapping = {"north": "north", "west": "east", "south": "south", "east": "west"}
+    if direction == "north":
+        structure = np.rot90(structure, k=-1, axes=(0, 2))
+        facing_mapping = {"north": "west", "west": "south", "south": "east", "east": "north"}
+
+    # initial coords
+
+    x = start[0]
+    y = start[1]
+    z = start[2]
+
+    # builds structure in layers pos to neg X, each layer is built in rows from bottom to top, rows built pos to neg Z
+    for layer in structure:
+        for row in layer:
+            for block in row:
+                if block == "air":  # skips to next block if air
+                    z = z - 1
+                    continue
+                # Extract block information
+                block_info = block.split('[')
+                block_name = block_info[0]
+                print(block_name)
+                block_properties = '[' + block_info[1] if len(block_info) > 1 else ''
+
+                # Handle rotation of directional blocks
+                if direction != "east" and 'facing=' in block_properties:
+                    # Extract current facing direction and update properties
+                    facing_info = block_properties.split('facing=')[1].split(',')[0]
+                    facing_direction = facing_info.replace("]", "").replace("'", "").strip()
+                    updated_facing = facing_mapping.get(facing_direction, facing_direction)
+                    block_properties = '[' + 'facing=' + updated_facing + ',' + block_properties.split(',', 1)[1]
+
+                # Place the block with the updated information
+                editor.placeBlock(ivec3(x, y, z), Block(block_name + block_properties))
+                print("placed", str(block_name + block_properties), "at ", x, y, z)
+                z = z - 1  # moves to next block in row
+            z = start[2]  # resets block
+            y = y + 1  # moves to next row in layer
+        y = start[1]  # resets row
+        x = x - 1  # moves to next layer in structure
+
+
+# corner1 = ivec3(-14, 69, 153)
+# corner2 = ivec3(-20, 73, 147)
+
+corner1 = ivec3(-14, 69, 147)
+corner2 = ivec3(-20, 73, 153)
 
 start = ivec3(-6, 70, 137)
 
-build_house(editor, start)
+write_structure_to_file("basic_house.txt", corner1, corner2)
+build_house(editor, "./Schematics/basic_house.txt", start, "south")
