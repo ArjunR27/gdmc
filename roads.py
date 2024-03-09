@@ -2,8 +2,9 @@ import sys
 from queue import PriorityQueue
 import time
 from gdpc import __url__, Editor, Block
-from gdpc.exceptions import InterfaceConnectionError
+from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
 from building import *
+import numpy as np
 
 
 # Create an editor object.
@@ -46,6 +47,11 @@ print("helooooooooo", heightmap[86 - areaLow[0]][13 - areaLow[2]])
 
 def buildRoads(buildings):
     obstacles = []
+    doors = []
+    goals = []
+    for b in buildings:
+        doors.append(b.door)
+
     print(len(buildings))
     for building in buildings:
         print(building.corner.x - 1, building.corner.x + building.length)
@@ -58,21 +64,66 @@ def buildRoads(buildings):
         obstacles.remove(Point(building.door.x, building.door.y, building.door.z - 1))
         obstacles.remove(Point(building.door.x, building.door.y, building.door.z))
     print(obstacles)
-    """"""
-    print("building roads")
-    for i in range(0, len(buildings) - 1):
-        path = astar(buildings[i], buildings[i + 1], obstacles)
+
+    pts = lsrl(doors)
+    #editor.placeBlock((pts[0].x, pts[0].y, pts[0].z), Block("red_concrete"))
+    #editor.placeBlock((pts[1].x, pts[1].y, pts[1].z), Block("red_concrete"))
+    highway = astar(pts[0], pts[1], obstacles)
+    for block in highway:
+        print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
+        goals.append(block.pos)
+        editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("red_concrete"))
+        #editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("grass_block"))
+
+    for building in buildings:
+        path = astar(building.door, findNearest(building.door, goals), obstacles)
         print("path built")
         for block in path:
             print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
             editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("red_concrete"))
             #editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("grass_block"))
+    """
+    print("building roads")
+    for building in buildings:
+        path = astar(building.door, findNearest(building.door, goals), obstacles)
+        print("path built")
+        for block in path:
+            print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
+            goals.append(block.pos)
+            editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("red_concrete"))
+            #editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("grass_block"))"""
 
-def astar(building1, building2, obstacles):
-    print("pathing")
+def findNearest(pos, goals):
+    print(pos.x, pos.y, pos.z)
+    print(goals[0].x, goals[0].y, goals[0].z, "and", goals[1].x, goals[1].y, goals[1].z)
+    best = None
+    bestDistance = float('inf')
+    for goal in goals:
+        dist = abs(pos.x - goal.x) + abs(pos.y - goal.y) + abs(pos.z - goal.z)
+        if dist < bestDistance and pos != goal:
+            best = goal
+            bestDistance = dist
+    print("best", best.x, best.y, best.z)
+    return best
+
+def lsrl(points):
+    xValues = np.array([i.x for i in points])
+    zValues = np.array([i.z for i in points])
+    r = np.corrcoef(xValues, zValues)[0, 1]
+    slope = r * (np.std(zValues)/np.std(xValues))
+
+    xlow = np.min(xValues) + 5
+    zlow = int(np.mean(zValues) - slope * np.mean(xValues) + slope * xlow)
+    ylow = heightmap[xlow - areaLow[0]][zlow - areaLow[2]] - 1
+    xhigh = np.max(xValues) - 5
+    zhigh = int(np.mean(zValues) - slope * np.mean(xValues) + slope * xhigh)
+    yhigh = heightmap[xhigh - areaLow[0]][zhigh - areaLow[2]] - 1
+    return [Point(xlow, ylow, zlow), Point(xhigh, yhigh, zhigh)]
+
+def astar(first, goal, obstacles):
+    print("pathing from", first.x, first.y, first.x, "to", goal.x, goal.y, goal.z)
     queue = PriorityQueue()
-    goal = building2.door
-    start = Node(building1.door, None, goal)
+    start = Node(first, None, goal)
     closed = []
     open = [start.pos]
     queue.put(start)
@@ -154,6 +205,6 @@ building4 = Building(5, 4, 6, Point(152, 66, -12))
 #buildings = [Building(7, 4, 6, Point(79, 63, 16)), Building(5, 3, 6, Point(86, 63, 9)), Building(5, 4, 6, Point(76, 63, 28))]
 buildings = [building1, building2]
 buildings = [building1, building3]
-buildings = [building1, building4]
+buildings = [building1, building4, building3, building2]
 #buildings = [Building(7, 4, 6, Point(79, 63, 16)), Building(5, 3, 6, Point(86, 63, 9))]
 buildRoads(buildings)
