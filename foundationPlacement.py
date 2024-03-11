@@ -44,3 +44,16 @@ def createFoundation(buildRectangle):
     geometry.placeBoxHollow(editor, Box((buildRect.begin.x, minHeight, buildRect.begin.y),
                                         (buildRect.size.x, maxHeight - minHeight, buildRect.size.y)),
                             Block("blue_concrete"))
+
+
+def createFoundation(x, z, length):
+    worldSlice = editor.loadWorldSlice(buildRectangle)
+    print("World slice loaded!")
+
+    heightmap = worldSlice.heightmaps["WORLD_SURFACE"]
+
+    maxHeight = np.max(heightmap)
+    minHeight = np.min(heightmap)
+    geometry.placeBoxHollow(editor, Box((buildRect.begin.x, minHeight, buildRect.begin.y),
+                                        (buildRect.size.x, maxHeight - minHeight, buildRect.size.y)),
+                            Block("blue_concrete"))
