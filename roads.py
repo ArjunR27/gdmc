@@ -45,7 +45,7 @@ heightmap = worldSlice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
 areaLow = buildArea.begin
 areaHigh = buildArea.end
 
-def buildRoads(buildings):
+def buildRoads(heightmap, areaLow, buildings):
     obstacles = []
     doors = []
     goals = []
@@ -74,8 +74,8 @@ def buildRoads(buildings):
             obstacles.remove(ivec3(building.door.x + 1, building.door.y, building.door.z))
 
     # creating the endpoints of the highway and pathing between them
-    pts = lsrl(doors)
-    highway = astar(pts[0], pts[1], obstacles)
+    pts = lsrl(heightmap, areaLow, doors)
+    highway = astar(heightmap, areaLow, pts[0], pts[1], obstacles)
     for block in highway:
         #print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
         goals.append(block.pos)
@@ -84,7 +84,7 @@ def buildRoads(buildings):
 
     # For each building path to the nearest point on the highway to path to
     for building in buildings:
-        path = astar(building.door, findNearest(building.door, goals), obstacles)
+        path = astar(heightmap, areaLow, building.door, findNearest(building.door, goals), obstacles)
         print("path built")
         for block in path:
             #print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
@@ -105,7 +105,7 @@ def findNearest(pos, goals):
     return best
 
 # Calculates a least squares regression line given the points and returns two endpoints of the line
-def lsrl(points):
+def lsrl(heightmap, areaLow, points):
     # Calculating correlation coefficient and slope
     xValues = np.array([i.x for i in points])
     zValues = np.array([i.z for i in points])
@@ -122,7 +122,7 @@ def lsrl(points):
     return [ivec3(xlow, ylow, zlow), ivec3(xhigh, yhigh, zhigh)]
 
 # Astar search pathing algorithm
-def astar(first, goal, obstacles):
+def astar(heightmap, areaLow, first, goal, obstacles):
     queue = PriorityQueue()
     start = Node(first, None, goal)
     closed = []
@@ -147,7 +147,7 @@ def astar(first, goal, obstacles):
         closed.append(current.pos)
 
         # Adding new nodes to the queue
-        for neighbor in current.possibleBlocks():
+        for neighbor in current.possibleBlocks(heightmap, areaLow):
             if neighbor not in obstacles and neighbor not in closed:
                 if neighbor in open: # implement this later for better functionality
                     pass
@@ -181,7 +181,7 @@ class Node:
         return self.pos == other.pos
 
     # Children nodes
-    def possibleBlocks(self):
+    def possibleBlocks(self, heightmap, areaLow):
         blocks = []
         blocks.append(ivec3(self.pos.x + 1, heightmap[self.pos.x + 1 - areaLow[0]][self.pos.z - areaLow[2]] - 1, self.pos.z))
         blocks.append(ivec3(self.pos.x, heightmap[self.pos.x - areaLow[0]][self.pos.z + 1 - areaLow[2]] - 1, self.pos.z + 1))
@@ -198,4 +198,4 @@ building5 = Structure(ivec3(156, 67, -12), ivec3(152, 80, -9), "path", "north", 
 building6 = Structure(ivec3(126, 63, -40), ivec3(122, 70, -38), "path", "north", ivec3(124, 62, -40))
 
 buildings = [building1, building4, building3, building2, building5, building6]
-buildRoads(buildings)
+buildRoads(heightmap, areaLow, buildings)
