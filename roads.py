@@ -1,9 +1,12 @@
 import sys
 from queue import PriorityQueue
-import time
 from gdpc import __url__, Editor, Block
-from gdpc.exceptions import InterfaceConnectionError
-from building import *
+from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
+from glm import ivec3
+
+#from building import *
+from schematics import *
+import numpy as np
 
 
 # Create an editor object.
@@ -42,37 +45,86 @@ heightmap = worldSlice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
 areaLow = buildArea.begin
 areaHigh = buildArea.end
 
-print("helooooooooo", heightmap[86 - areaLow[0]][13 - areaLow[2]])
-
-def buildRoads(buildings):
+def buildRoads(heightmap, areaLow, buildings):
     obstacles = []
-    print(len(buildings))
+    doors = []
+    goals = []
+
+    # Adding the doors to the list
+    for b in buildings:
+        doors.append(b.door)
+
+    # Adding the buildings and 1 block padding to the obstacles list
     for building in buildings:
-        print(building.corner.x - 1, building.corner.x + building.length)
-        print(building.corner.z - 1, building.corner.z + building.width)
-        for x in range(building.corner.x - 1, building.corner.x + building.length + 1):
-            for z in range(building.corner.z - 1, building.corner.z + building.width + 1):
-                obstacles.append(Point(x, building.corner.y, z))
-                print(x, building.corner.y, z)
-        print(building.door.x, building.door.y, building.door.z - 1)
-        obstacles.remove(Point(building.door.x, building.door.y, building.door.z - 1))
-        obstacles.remove(Point(building.door.x, building.door.y, building.door.z))
-    print(obstacles)
-    """"""
-    print("building roads")
-    for i in range(0, len(buildings) - 1):
-        path = astar(buildings[i], buildings[i + 1], obstacles)
+        start = ivec3(building.start.x, building.start.y - 1, building.start.z)
+        end = ivec3(building.end.x, building.start.y - 1, building.end.z)
+        for x in range(min(start.x, end.x) - 1, max(start.x, end.x) + 2):
+            for z in range(min(start.z, end.z) - 1, max(start.z, end.z) + 2):
+                obstacles.append(ivec3(x, start.y, z))
+
+        # Removing the door and block in front of it from obstacles
+        obstacles.remove(building.door)
+        if building.direction == "north":
+            obstacles.remove(ivec3(building.door.x, building.door.y, building.door.z - 1))
+        elif building.direction == "south":
+            obstacles.remove(ivec3(building.door.x, building.door.y, building.door.z + 1))
+        elif building.direction == "west":
+            obstacles.remove(ivec3(building.door.x - 1, building.door.y, building.door.z))
+        else:
+            obstacles.remove(ivec3(building.door.x + 1, building.door.y, building.door.z))
+
+    # creating the endpoints of the highway and pathing between them
+    pts = lsrl(heightmap, areaLow, doors)
+    highway = astar(heightmap, areaLow, pts[0], pts[1], obstacles)
+    for block in highway:
+        #print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
+        goals.append(block.pos)
+        editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("blue_concrete"))
+        #editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("grass_block"))
+
+    # For each building path to the nearest point on the highway to path to
+    for building in buildings:
+        path = astar(heightmap, areaLow, building.door, findNearest(building.door, goals), obstacles)
         print("path built")
         for block in path:
-            print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
+            #print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
             editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("red_concrete"))
             #editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("grass_block"))
 
-def astar(building1, building2, obstacles):
-    print("pathing")
+# Finds the nearest element of goals to pos
+def findNearest(pos, goals):
+    best = None
+    bestDistance = float('inf')
+
+    # Iterate through goals to find the best
+    for goal in goals:
+        dist = abs(pos.x - goal.x) + abs(pos.y - goal.y) + abs(pos.z - goal.z)
+        if dist < bestDistance and pos != goal:
+            best = goal
+            bestDistance = dist
+    return best
+
+# Calculates a least squares regression line given the points and returns two endpoints of the line
+def lsrl(heightmap, areaLow, points):
+    # Calculating correlation coefficient and slope
+    xValues = np.array([i.x for i in points])
+    zValues = np.array([i.z for i in points])
+    r = np.corrcoef(xValues, zValues)[0, 1]
+    slope = r * (np.std(zValues)/np.std(xValues))
+
+    # Calculating coordinates of the endpoints of the highway
+    xlow = np.min(xValues) + 5
+    zlow = int(np.mean(zValues) - slope * np.mean(xValues) + slope * xlow)
+    ylow = heightmap[xlow - areaLow[0]][zlow - areaLow[2]] - 1
+    xhigh = np.max(xValues) - 5
+    zhigh = int(np.mean(zValues) - slope * np.mean(xValues) + slope * xhigh)
+    yhigh = heightmap[xhigh - areaLow[0]][zhigh - areaLow[2]] - 1
+    return [ivec3(xlow, ylow, zlow), ivec3(xhigh, yhigh, zhigh)]
+
+# Astar search pathing algorithm
+def astar(heightmap, areaLow, first, goal, obstacles):
     queue = PriorityQueue()
-    goal = building2.door
-    start = Node(building1.door, None, goal)
+    start = Node(first, None, goal)
     closed = []
     open = [start.pos]
     queue.put(start)
@@ -80,8 +132,8 @@ def astar(building1, building2, obstacles):
     while not queue.empty():
         current = queue.get()
         open.remove(current.pos)
-        #editor.placeBlock((current.pos.x, current.pos.y, current.pos.z), Block("grass_block"))
-        print("heuristic:", current.h, "f:", current.f, "point:", current.pos.x, current.pos.y, current.pos.z)
+
+        # If the goal is reached, backtrack the path and return
         if current.h == 0:
             path = []
             current = current.parent
@@ -93,26 +145,21 @@ def astar(building1, building2, obstacles):
             return path
 
         closed.append(current.pos)
-        for neighbor in current.possibleBlocks():
-            print("in obstables:", neighbor in obstacles)
+
+        # Adding new nodes to the queue
+        for neighbor in current.possibleBlocks(heightmap, areaLow):
             if neighbor not in obstacles and neighbor not in closed:
-                """new = Node(neighbor, current, goal)
-                if new in queue: 
-                    #if (new.g + new.e) < ()
-                    pass"""
                 if neighbor in open: # implement this later for better functionality
                     pass
                 else:
-                    print("##### new node", neighbor.x, neighbor.y, neighbor.z)
-                    print("open", len(open), "queue", queue.qsize())
                     queue.put(Node(neighbor, current, goal))
                     open.append(neighbor)
-                    #time.sleep(0.5)
 
     return None
 
 class Node:
     def __init__(self, pos, parent, goal):
+        # ALl the parameters needed, including e which represents elevation
         self.pos = pos
         self.goal = goal
         self.h = abs(self.goal.x - pos.x) + abs(self.goal.z - pos.z)
@@ -120,6 +167,7 @@ class Node:
         self.e = 0
         self.parent = parent
 
+        # Double counting any change in elevation to incentivize the algorithm to avoid hills
         if parent is not None:
             self.g = parent.g + 1
             self.e = parent.e + 2 * abs(parent.pos.y - self.pos.y)
@@ -132,28 +180,22 @@ class Node:
     def __eq__(self, other):
         return self.pos == other.pos
 
-    def possibleBlocks(self):
+    # Children nodes
+    def possibleBlocks(self, heightmap, areaLow):
         blocks = []
-        """blocks.append(Point(self.pos.x + 1, self.pos.y, self.pos.z))
-        blocks.append(Point(self.pos.x, self.pos.y, self.pos.z + 1))
-        blocks.append(Point(self.pos.x - 1, self.pos.y, self.pos.z))
-        blocks.append(Point(self.pos.x, self.pos.y, self.pos.z - 1))"""
-        print("hi")
-
-        blocks.append(Point(self.pos.x + 1, heightmap[self.pos.x + 1 - areaLow[0]][self.pos.z - areaLow[2]] - 1, self.pos.z))
-        blocks.append(Point(self.pos.x, heightmap[self.pos.x - areaLow[0]][self.pos.z + 1 - areaLow[2]] - 1, self.pos.z + 1))
-        blocks.append(Point(self.pos.x - 1, heightmap[self.pos.x - 1 - areaLow[0]][self.pos.z - areaLow[2]] - 1, self.pos.z))
-        blocks.append(Point(self.pos.x, heightmap[self.pos.x - areaLow[0]][self.pos.z - 1 - areaLow[2]] - 1, self.pos.z - 1))
+        blocks.append(ivec3(self.pos.x + 1, heightmap[self.pos.x + 1 - areaLow[0]][self.pos.z - areaLow[2]] - 1, self.pos.z))
+        blocks.append(ivec3(self.pos.x, heightmap[self.pos.x - areaLow[0]][self.pos.z + 1 - areaLow[2]] - 1, self.pos.z + 1))
+        blocks.append(ivec3(self.pos.x - 1, heightmap[self.pos.x - 1 - areaLow[0]][self.pos.z - areaLow[2]] - 1, self.pos.z))
+        blocks.append(ivec3(self.pos.x, heightmap[self.pos.x - areaLow[0]][self.pos.z - 1 - areaLow[2]] - 1, self.pos.z - 1))
         return blocks
 
-building1 = Building(5, 3, 6, Point(86, 63, 9))
-building2 = Building(5, 4, 6, Point(76, 63, 28))
-building3 = Building(5, 3, 6, Point(128, 62, 7))
-building4 = Building(5, 4, 6, Point(152, 66, -12))
 
-#buildings = [Building(7, 4, 6, Point(79, 63, 16)), Building(5, 3, 6, Point(86, 63, 9)), Building(5, 4, 6, Point(76, 63, 28))]
-buildings = [building1, building2]
-buildings = [building1, building3]
-buildings = [building1, building4]
-#buildings = [Building(7, 4, 6, Point(79, 63, 16)), Building(5, 3, 6, Point(86, 63, 9))]
-buildRoads(buildings)
+building1 = Structure(ivec3(90, 64, 9), ivec3(86, 70, 11), "path", "east", ivec3(90, 63, 10))
+building2 = Structure(ivec3(80, 64, 28), ivec3(76, 70, 31), "path", "north", ivec3(78, 63, 28))
+building3 = Structure(ivec3(132, 63, 7), ivec3(128, 70, 9), "path", "west", ivec3(128, 62, 8))
+building4 = Structure(ivec3(122, 64, -14), ivec3(120, 70, -12), "path", "south", ivec3(121, 63, -12))
+building5 = Structure(ivec3(156, 67, -12), ivec3(152, 80, -9), "path", "north", ivec3(154, 66, -12))
+building6 = Structure(ivec3(126, 63, -40), ivec3(122, 70, -38), "path", "north", ivec3(124, 62, -40))
+
+buildings = [building1, building4, building3, building2, building5, building6]
+buildRoads(heightmap, areaLow, buildings)

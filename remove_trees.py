@@ -1,4 +1,3 @@
-
 import sys
 from gdpc import __url__, Editor, Block, geometry, Box
 from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
@@ -23,8 +22,13 @@ blocks_to_remove = {
     Block("minecraft:dark_oak_log").id,
     Block("minecraft:cactus").id,
     Block("minecraft:tall_grass").id,
+    Block("minecraft:grass").id, 
     Block("minecraft:double_plant").id,
     Block("minecraft:yellow_flower").id,
+    Block("minecraft:white_tulip").id,
+    Block("minecraft:orange_tulip").id,
+    Block("minecraft:pink_tulip").id,
+    Block("minecraft:red_tulip").id,
     Block("minecraft:red_flower").id,
     Block("minecraft:brown_mushroom").id,
     Block("minecraft:red_mushroom").id,
@@ -36,7 +40,6 @@ blocks_to_remove = {
     Block("minecraft:red_concrete").id,
     Block("minecraft:mushroom_stem").id,
 }
-
 
 def remove():
     editor = Editor()
@@ -67,8 +70,6 @@ def remove():
 
     buildRectangle = buildArea.toRect()
 
-    # Create a box of air from the max_surface_height
-
     worldslice = editor.loadWorldSlice(buildRectangle)
     print("Loaded world slice")
 
@@ -79,25 +80,9 @@ def remove():
 
     max_surface_height = np.max(heightmap)
     min_surface_height = np.min(heightmap)
-
-
-    print(min_surface_height)
-    print(max_surface_height)
-
-    points_to_remove = []
-    # Use itertools.product() to create combinations of x, y, and z values
-    for x, y, z in itertools.product(range(buildArea.begin[0], buildArea.end[0]),
-                                      range(min_surface_height, max_surface_height),
-                                      range(buildArea.begin[2], buildArea.end[2])):
-        block = editor.getBlock((x, y, z))
-        if block.id in blocks_to_remove:
-            print((x, y, z))
-            points_to_remove.append((x, y, z))
-    editor.placeBlock(points_to_remove, Block("air"))
-
-def main():
-    remove()
-
-
-if __name__ == "__main__":
-    main()
+    step = 16
+    for x_start in range(0, len(heightmap) + 1, step):
+        for z_start in range(0, len(heightmap[0]) + 1, step):
+            for block in blocks_to_remove:
+                editor.runCommand('fill ' + str(buildArea.begin.x + x_start) + ' ' + str(min_surface_height) + ' ' + str(buildArea.begin.z + z_start) + ' ' + str(buildArea.begin.x + x_start + step-1) + ' ' + str(max_surface_height + 20) + ' ' + str(buildArea.begin.z + z_start + step-1) + ' air replace ' + block)
+remove()
