@@ -1,29 +1,12 @@
 import sys
-from typing import Optional, Tuple
-
 import numpy as np
 from gdpc.utils import nonZeroSign
 from glm import ivec2, ivec3
-from gdpc import __url__, Editor, Block, geometry
-from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
-from gdpc.vector_tools import Y, addY, dropY, line3D, circle, fittingCylinder, loop3D, Vec3iLike, Rect
-import logging
-from random import randint
-from termcolor import colored
-from gdpc import Block, Editor
-from gdpc import geometry as geo
-from gdpc import minecraft_tools as mt
-from gdpc import editor_tools as et
 import os.path
-import random
-from gdpc.geometry import placeBox, placeCuboid
 from gdpc import __url__, Editor, Block
 from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
 from gdpc.vector_tools import addY, dropY
-from gdpc.minecraft_tools import signBlock
-from gdpc.editor_tools import placeContainerBlock
-from gdpc.geometry import placeBox, placeCuboid
-from foundationPlacement import createFoundation
+import os
 import ast
 
 # The minimum build area size in the XZ-plane
@@ -69,35 +52,30 @@ buildRect = buildArea.toRect()
 worldSlice = editor.loadWorldSlice(buildRect)
 print("World slice loaded!")
 
-editor.buffering = False  # to visualize load
-
-# Place an outline around the build area
-
+editor.buffering = False  # set to false to visualize load
 
 heightmap = worldSlice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
 meanHeight = np.mean(heightmap)
 groundCenter = addY(buildRect.center, meanHeight)
 
-# Build a floating 5x9 platform in the middle of the build area.
 
-geometry.placeRectOutline(editor, buildRect, 100, Block("blue_concrete"))
-
-# def loopArea(begin: Vec3iLike, end: Optional[Vec3iLike] = None):
-#     """Yields all points between <begin> and <end> (end-inclusive).
-#     If <end> is not given, yields all points between (0,0,0) and <begin>."""
-#     if end is None:
-#         begin, end = (0, 0, 0), begin
-#
-#     for x in range(begin[0], end[0] + nonZeroSign(end[0] - begin[0]), nonZeroSign(end[0] - begin[0])):
-#         for y in range(begin[1], end[1] + nonZeroSign(end[1] - begin[1]), nonZeroSign(end[1] - begin[1])):
-#             for z in range(begin[2], end[2] + nonZeroSign(end[2] - begin[2]), nonZeroSign(end[2] - begin[2])):
-#                 yield ivec3(x, y, z)
+class Structure:
+    def __init__(self, start, end, filepath, direction, door):
+        self.start = start
+        self.end = end
+        self.filepath = filepath
+        self.direction = direction
+        self.door = door
 
 
-import os
-
-
-def write_structure_to_file(filename, corner1, corner2):
+def write_schematic_to_file(filename, corner1, corner2):
+    """
+    iterates through 3D space given by corners and writes them into schematic txt file
+    corners are automatically converted into Southeast bottom, and its opposite corner
+        :param filename: name of file to store array
+        :param corner1: any given corner of the build, converted to SE, bottom
+        :param corner2: opposite of corner 1, converted to NW, top
+    """
     # Ensure the Schematics directory exists
     directory = "Schematics"
     if not os.path.exists(directory):
@@ -106,6 +84,7 @@ def write_structure_to_file(filename, corner1, corner2):
     # Adjust the filename to include the directory path
     filepath = os.path.join(directory, filename)
 
+    # corrected corners for any corner pair
     corner1_c = [max(corner1[0], corner2[0]), min(corner1[1], corner2[1]), max(corner1[2], corner2[2])]
     corner2_c = [min(corner1[0], corner2[0]), max(corner1[1], corner2[1]), min(corner1[2], corner2[2])]
 
@@ -127,34 +106,51 @@ def write_structure_to_file(filename, corner1, corner2):
                 file.write("],\n")
             file.write("    ],\n")
         file.write("]\n")
-    print(f"Structure written to {filepath}")
+    print(f"Schematic written to {filepath}")
 
 
-def read_structure_from_file(filename):
+def read_schematic_from_file(filename):
+    """
+    Reads schematic from file and returns it as a 3D numpy array representation of the blocks
+    :param filename: name of file for which schematic you want to load
+    :return numpy array:
+    """
     with open(filename, 'r') as file:
         content = file.read()
 
     # Use ast.literal_eval to safely evaluate the string representation of the array
-    structure_list = ast.literal_eval(content)
+    schematic_list = ast.literal_eval(content)
 
     # Convert the nested lists to a NumPy array
-    structure_array = np.array(structure_list, dtype=object)
+    schematic_array = np.array(schematic_list, dtype=object)
 
-    return structure_array
+    return schematic_array
 
 
-def build_house(editor, filepath, start, direction="east"):
-    structure = read_structure_from_file(filepath)
+def build_structure(editor, filepath, start, direction="east"):
+    """
+    Reads schematic from file and builds structure into world. Structure builds in an order depending
+    on which coordinates are used to create the schematic. End result is not affected.
+    :param editor: editor instance
+    :param filepath: name of file for which schematic you want to load
+    :param start: ivec3, the Southeast (pos x, pos z) corner of the plot
+    :param direction: String, direction building faces. East is default
+    :return numpy array:
+    """
+
+    schematic = read_schematic_from_file(filepath)
+    door_found = False  # records first door found
+    door = None
 
     # update rotation of structs and rotation mapping for blocks
     if direction == "south":
-        structure = np.rot90(structure, axes=(0, 2))
+        schematic = np.rot90(schematic, axes=(0, 2))
         facing_mapping = {"north": "east", "west": "north", "south": "west", "east": "south"}
     if direction == "west":
-        structure = np.flip(structure, 0)
+        schematic = np.flip(schematic, 0)
         facing_mapping = {"north": "north", "west": "east", "south": "south", "east": "west"}
     if direction == "north":
-        structure = np.rot90(structure, k=-1, axes=(0, 2))
+        schematic = np.rot90(schematic, k=-1, axes=(0, 2))
         facing_mapping = {"north": "west", "west": "south", "south": "east", "east": "north"}
 
     # initial coords
@@ -162,19 +158,28 @@ def build_house(editor, filepath, start, direction="east"):
     x = start[0]
     y = start[1]
     z = start[2]
+    end = start
+    # print("Start at,", start)
 
     # builds structure in layers pos to neg X, each layer is built in rows from bottom to top, rows built pos to neg Z
-    for layer in structure:
+    for layer in schematic:
         for row in layer:
             for block in row:
                 if block == "air":  # skips to next block if air
+                    end = ivec3(x, y, z)  # keeps track of current latest placed block
                     z = z - 1
                     continue
+
                 # Extract block information
                 block_info = block.split('[')
                 block_name = block_info[0]
-                print(block_name)
+                # print(block) # debug
                 block_properties = '[' + block_info[1] if len(block_info) > 1 else ''
+
+                if not door_found and "_door" in block_name:  # finds door for road generation
+                    # print(f"Found door: {block},    coordinates", x, y, z) # debug
+                    door = ivec3(x, y - 1, z)  # pathing algorithm needs block beneath the door
+                    door_found = True
 
                 # Handle rotation of directional blocks
                 if direction != "east" and 'facing=' in block_properties:
@@ -186,21 +191,22 @@ def build_house(editor, filepath, start, direction="east"):
 
                 # Place the block with the updated information
                 editor.placeBlock(ivec3(x, y, z), Block(block_name + block_properties))
-                print("placed", str(block_name + block_properties), "at ", x, y, z)
+                # print("placed", str(block_name + block_properties), "at ", x, y, z)  # debug
+
                 z = z - 1  # moves to next block in row
             z = start[2]  # resets block
             y = y + 1  # moves to next row in layer
         y = start[1]  # resets row
         x = x - 1  # moves to next layer in structure
 
+    #print("End at,", end)
+    struct = Structure(start, end, filepath, direction, door)
+    return struct
 
-# corner1 = ivec3(-14, 69, 153)
-# corner2 = ivec3(-20, 73, 147)
 
 corner1 = ivec3(-14, 69, 147)
 corner2 = ivec3(-20, 73, 153)
+write_schematic_to_file("basic_house.txt", corner1, corner2)
 
 start = ivec3(-6, 70, 137)
-
-write_structure_to_file("basic_house.txt", corner1, corner2)
-build_house(editor, "./Schematics/basic_house.txt", start, "south")
+house1 = build_structure(editor, "./Schematics/basic_house.txt", start, "west")
