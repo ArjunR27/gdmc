@@ -8,6 +8,7 @@ from gdpc.vector_tools import addY
 
 from settler import map_water, find_settlement_location, find_building_locations
 from foundationPlacement import createFoundations
+from schematics import build_structure
 
 # Create an editor object.
 # The Editor class provides a high-level interface to interact with the Minecraft world.
@@ -61,3 +62,6 @@ building_plots = find_building_locations(settlement_plot, settlement_water, nega
 num_buildings = 12
 
 createFoundations(editor, building_plots, num_buildings)
+
+for plot in building_plots:
+    build_structure(editor, "Schematics/basic_house.txt", plot)
