@@ -13,8 +13,8 @@ def createFoundations(editor, plots, num_buildings):
         minHeight = np.min(building_plot.plot)
 
         # Calculate corner points of the foundation box
-        box_corner1 = (building_plot.x, minHeight, building_plot.z)
-        box_corner2 = (building_plot.plot_len, maxHeight - minHeight, building_plot.plot_len)
+        box_corner1 = (building_plot.x + 1, minHeight, building_plot.z + 1)
+        box_corner2 = (building_plot.plot_len - 2, maxHeight - minHeight, building_plot.plot_len - 2)
 
         # Place hollow box
         geometry.placeBoxHollow(editor, Box(box_corner1, box_corner2), Block("blue_concrete"))
