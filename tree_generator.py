@@ -143,7 +143,7 @@ end = buildArea.end
 trees = []
 log = 'oak_log'
 
-for i in range(25):
+for i in range(1):
     # Generate random x and z values between begin and end
     random_x = int(random.uniform(begin[0], end[0]))
     random_z = int(random.uniform(begin[2], end[2]))
