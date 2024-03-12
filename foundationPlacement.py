@@ -7,6 +7,7 @@ from glm import ivec3
 
 
 def createFoundations(editor, plots, num_buildings):
+
     for building_plot in plots[:num_buildings]:
         building_plot.display_info()
         maxHeight = np.max(building_plot.plot)
