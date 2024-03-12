@@ -21,6 +21,7 @@ class BuildingPlot:
         self.z = z
         self.std = std
         self.plot_len = len(self.plot)
+        self.y = np.max(self.plot)
 
     def display_info(self):
         print("Building Plot Information:")

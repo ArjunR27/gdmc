@@ -8,6 +8,7 @@ from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
 from gdpc.vector_tools import addY, dropY
 import os
 import ast
+from settler import BuildingPlot
 
 # The minimum build area size in the XZ-plane
 MIN_BUILD_AREA_SIZE = ivec2(35, 35)
@@ -127,13 +128,13 @@ def read_schematic_from_file(filename):
     return schematic_array
 
 
-def build_structure(editor, filepath, start, direction="east"):
+def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
     """
     Reads schematic from file and builds structure into world. Structure builds in an order depending
     on which coordinates are used to create the schematic. End result is not affected.
     :param editor: editor instance
     :param filepath: name of file for which schematic you want to load
-    :param start: ivec3, the Southeast (pos x, pos z) corner of the plot
+    :param plot: BuildingPlot, converted to ivec3, the Southeast (pos x, pos z) corner of the plot
     :param direction: String, direction building faces. East is default
     :return numpy array:
     """
@@ -153,7 +154,8 @@ def build_structure(editor, filepath, start, direction="east"):
         schematic = np.rot90(schematic, k=-1, axes=(0, 2))
         facing_mapping = {"north": "west", "west": "south", "south": "east", "east": "north"}
 
-    # initial coords
+    # converts plot to SE start coordinate
+    start = ivec3((plot.x + plot.plot_len), plot.y, (plot.z + plot.plot_len))
 
     x = start[0]
     y = start[1]
@@ -199,7 +201,7 @@ def build_structure(editor, filepath, start, direction="east"):
         y = start[1]  # resets row
         x = x - 1  # moves to next layer in structure
 
-    #print("End at,", end)
+    # print("End at,", end)
     struct = Structure(start, end, filepath, direction, door)
     return struct
 
@@ -209,4 +211,6 @@ corner2 = ivec3(-20, 73, 153)
 write_schematic_to_file("basic_house.txt", corner1, corner2)
 
 start = ivec3(-6, 70, 137)
+
+plot =
 house1 = build_structure(editor, "./Schematics/basic_house.txt", start, "west")
