@@ -12,6 +12,7 @@ from gdpc import __url__, Editor, Block
 from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
 from gdpc.vector_tools import addY
 from tqdm import tqdm
+from foundationPlacement import createFoundations
 
 
 class BuildingPlot:
@@ -64,7 +65,7 @@ def filter_overlapping_plots(building_plots, padding):
     return filtered_plots
 
 
-def build_outline(negative_corner, positive_corner, block, y):
+def build_outline(editor, negative_corner, positive_corner, block, y):
 
     # Place outline
     for x in range(negative_corner[0], positive_corner[0]):
@@ -84,59 +85,7 @@ def build_outline(negative_corner, positive_corner, block, y):
     editor.placeBlock(positive_corner, Block("blue_concrete"))
 
 
-# Create an editor object.
-# The Editor class provides a high-level interface to interact with the Minecraft world.
-editor = Editor()
-editor.buffering = True
-editor.caching = True
-
-# Check if the editor can connect to the GDMC HTTP interface.
-try:
-    editor.checkConnection()
-except InterfaceConnectionError:
-    print(
-        f"Error: Could not connect to the GDMC HTTP interface at {editor.host}!\n"
-        "To use GDPC, you need to use a \"backend\" that provides the GDMC HTTP interface.\n"
-        "For example, by running Minecraft with the GDMC HTTP mod installed.\n"
-        f"See {__url__}/README.md for more information."
-    )
-    sys.exit(1)
-
-# Get the build area.
-try:
-    buildArea = editor.getBuildArea()
-except BuildAreaNotSetError:
-    print(
-        "Error: failed to get the build area!\n"
-        "Make sure to set the build area with the /setbuildarea command in-game.\n"
-        "For example: /setbuildarea ~0 0 ~0 ~64 200 ~64"
-    )
-    sys.exit(1)
-
-print("Loading world slice...")
-buildRect = buildArea.toRect()
-worldSlice = editor.loadWorldSlice(buildRect)
-print("World slice loaded!")
-
-vec = addY(buildRect.center, 30)
-
-heightmap = worldSlice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
-
-print(f"Heightmap shape: {heightmap.shape}")
-
-localCenter = buildRect.size // 2
-
-centerHeight = heightmap[tuple(localCenter)]
-centerTopBlock = worldSlice.getBlock(addY(localCenter, centerHeight - 1))
-print(f"Top block at the center of the build area: {centerTopBlock}")
-
-print(f"Average height: {int(np.mean(heightmap))}")
-
-begin = buildArea.begin
-end = buildArea.end
-
-
-def map_water(begin, end, heightmap):
+def map_water(editor, begin, end, heightmap):
     # Create an array of zeroes with the same dimensions as heightmap
     water_array = np.zeros_like(heightmap)
 
@@ -195,7 +144,7 @@ def find_building_locations(settlement_plot, settlement_water, negative):
     building_plots = []
 
     # Hyperparameters
-    building_size = 5
+    building_size = 7
     step = 1
 
     # Iterate over building area with step and search for plots
@@ -235,12 +184,3 @@ def place_outlines(building_plots, negative, positive):
         positive_corner = (plot.x + plot.plot_len, y, plot.z + plot.plot_len)
         build_outline(negative_corner, positive_corner, gold, y)
 
-
-water_array = map_water(begin, end, heightmap)
-settlement_plot, settlement_water, negative, positive = find_settlement_location(begin, water_array, heightmap)
-building_plots = find_building_locations(settlement_plot, settlement_water, negative)
-
-for building_plot in building_plots:
-    building_plot.display_info()
-
-place_outlines(building_plots, negative, positive)
