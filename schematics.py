@@ -155,7 +155,7 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
         facing_mapping = {"north": "west", "west": "south", "south": "east", "east": "north"}
 
     # converts plot to SE start coordinate
-    start = ivec3((plot.x + plot.plot_len), plot.y, (plot.z + plot.plot_len))
+    start = ivec3((plot.x + plot.plot_len - 1), plot.y, (plot.z + plot.plot_len - 1))
 
     x = start[0]
     y = start[1]
