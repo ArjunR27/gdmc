@@ -67,6 +67,8 @@ createFoundations(editor, building_plots, num_buildings)
 structures = []
 
 for plot in building_plots[:num_buildings]:
-    structures.append(build_structure(editor, "Schematics/basic_house.txt", plot))
+    structure = build_structure(editor, "Schematics/basic_house.txt", plot)
+    structure.set_door((-2, -1, -1))
+    structures.append(structure)
 
 buildRoads(heightmap, begin, structures)
