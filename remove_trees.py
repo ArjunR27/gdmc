@@ -70,19 +70,21 @@ def remove():
     buildRectangle = buildArea.toRect()
 
     worldslice = editor.loadWorldSlice(buildRectangle)
-    print("Loaded world slice")
 
-    # heightmap = worldslice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
     heightmap = worldslice.heightmaps["WORLD_SURFACE"]
 
-    print("loaded heightmap")
-
+    #Find highest y level in build area
     max_surface_height = np.max(heightmap)
+    #Find lowest y level in build area
     min_surface_height = np.min(heightmap)
+    #Step is the size of area to clear at once (16X16)
     step = 16
+    #Loop through X and Z ranges
     for x_start in range(0, len(heightmap) + 1, step):
         for z_start in range(0, len(heightmap[0]) + 1, step):
+            #Loop through all blocks that we want removed
             for block in blocks_to_remove:
+                #Run minecraft command to replace tree blocks
                 editor.runCommand('fill ' + str(buildArea.begin.x + x_start) + ' ' + str(min_surface_height) + ' ' + str(buildArea.begin.z + z_start) + ' ' + str(buildArea.begin.x + x_start + step-1) + ' ' + str(max_surface_height + 20) + ' ' + str(buildArea.begin.z + z_start + step-1) + ' air replace ' + block)
 
 
