@@ -128,7 +128,7 @@ def read_schematic_from_file(filename):
     return schematic_array
 
 
-def build_structure(editor, filepath, start: BuildingPlot, direction="east"):
+def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
     """
     Reads schematic from file and builds structure into world. Structure builds in an order depending
     on which coordinates are used to create the schematic. End result is not affected.
@@ -155,7 +155,7 @@ def build_structure(editor, filepath, start: BuildingPlot, direction="east"):
         facing_mapping = {"north": "west", "west": "south", "south": "east", "east": "north"}
 
     # converts plot to SE start coordinate
-    #start = ivec3((plot.x + plot.plot_len - 1), plot.y, (plot.z + plot.plot_len - 1))
+    start = ivec3((plot.x + plot.plot_len - 1), plot.y, (plot.z + plot.plot_len - 1))
 
     x = start[0]
     y = start[1]
@@ -206,11 +206,11 @@ def build_structure(editor, filepath, start: BuildingPlot, direction="east"):
     return struct
 
 
-corner1 = ivec3(-34, 64, 528)
-corner2 = ivec3(-42, 68, 520)
-
-#write_schematic_to_file("igloo.txt", corner1, corner2)
-
-start = ivec3(-60, 63, 495)
-
-igloo = build_structure(editor, "./Schematics/igloo.txt", start, "west")
+# corner1 = ivec3(-34, 64, 528)
+# corner2 = ivec3(-42, 68, 520)
+#
+# #write_schematic_to_file("igloo.txt", corner1, corner2)
+#
+# start = ivec3(-60, 63, 495)
+#
+# igloo = build_structure(editor, "./Schematics/igloo.txt", start, "west")
