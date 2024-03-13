@@ -218,7 +218,7 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
 
 # corner1 = ivec3(-14, 69, 153)
 # corner2 = ivec3(-20, 73, 147)
-# #
+# #cg
 # write_schematic_to_file("barrel.txt", corner1, corner2)
 # #
 # start = ivec3(-7, 70, 137)
