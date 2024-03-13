@@ -66,7 +66,13 @@ class Structure:
         self.end = end
         self.filepath = filepath
         self.direction = direction
-        self.door = door
+        self.door = door  # block underneath the "door"
+
+    def get_door(self):
+        return self.door
+
+    def set_door(self, coordinate: ivec3):
+        self.door = coordinate
 
 
 def write_schematic_to_file(filename, corner1, corner2):
@@ -204,7 +210,6 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
     # print("End at,", end)
     struct = Structure(start, end, filepath, direction, door)
     return struct
-
 
 # corner1 = ivec3(-34, 64, 528)
 # corner2 = ivec3(-42, 68, 520)
