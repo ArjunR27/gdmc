@@ -206,10 +206,10 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
     return struct
 
 
-# corner1 = ivec3(-14, 69, 147)
-# corner2 = ivec3(-20, 73, 153)
-# write_schematic_to_file("basic_house.txt", corner1, corner2)
+corner1 = ivec3(11, -12, 12)
+corner2 = ivec3(3, -3, 20)
+write_schematic_to_file("oak_house.txt", corner1, corner2)
+
+# start = ivec3(-3, -12, 40)
 #
-# start = ivec3(-6, 70, 137)
-#
-# house1 = build_structure(editor, "./Schematics/basic_house.txt", start, "west")
+# house1 = build_structure(editor, "./Schematics/oak_house.txt", start, "west")
