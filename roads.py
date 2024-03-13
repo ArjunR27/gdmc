@@ -57,9 +57,8 @@ def buildRoads(heightmap, areaLow, buildings):
     # Adding the buildings and 1 block padding to the obstacles list
     for building in buildings:
         start = ivec3(building.start.x, building.start.y - 1, building.start.z)
-        end = ivec3(building.end.x, building.start.y - 1, building.end.z)
-        for x in range(min(start.x, end.x) - 1, max(start.x, end.x) + 2):
-            for z in range(min(start.z, end.z) - 1, max(start.z, end.z) + 2):
+        for x in range(start.x - 8, start.x + 1):
+            for z in range(start.z - 8, start.z + 1):
                 obstacles.append(ivec3(x, start.y, z))
 
         # Removing the door and block in front of it from obstacles
@@ -74,7 +73,7 @@ def buildRoads(heightmap, areaLow, buildings):
             obstacles.remove(ivec3(building.door.x + 1, building.door.y, building.door.z))
 
     # creating the endpoints of the highway and pathing between them
-    pts = lsrl(heightmap, areaLow, doors)
+    pts = lsrl(heightmap, areaLow, doors, obstacles)
     highway = astar(heightmap, areaLow, pts[0], pts[1], obstacles)
     for block in highway:
         # print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
@@ -89,7 +88,7 @@ def buildRoads(heightmap, areaLow, buildings):
         for block in path:
             # print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
             editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("red_concrete"))
-            # editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("grass_block"))
+            #editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("grass_block"))
 
 
 # Finds the nearest element of goals to pos
@@ -107,7 +106,7 @@ def findNearest(pos, goals):
 
 
 # Calculates a least squares regression line given the points and returns two endpoints of the line
-def lsrl(heightmap, areaLow, points):
+def lsrl(heightmap, areaLow, points, obstacles):
     # Calculating correlation coefficient and slope
     xValues = np.array([i.x for i in points])
     zValues = np.array([i.z for i in points])
@@ -121,6 +120,19 @@ def lsrl(heightmap, areaLow, points):
     xhigh = np.max(xValues) - 5
     zhigh = int(np.mean(zValues) - slope * np.mean(xValues) + slope * xhigh)
     yhigh = heightmap[xhigh - areaLow[0]][zhigh - areaLow[2]] - 1
+
+    while ivec3(xlow, ylow, zlow) in obstacles or ivec3(xhigh, yhigh, zhigh) in obstacles:
+        if ivec3(xlow, ylow, zlow) in obstacles:
+            xlow += 1
+            zlow = int(np.mean(zValues) - slope * np.mean(xValues) + slope * xlow)
+            ylow = heightmap[xlow - areaLow[0]][zlow - areaLow[2]] - 1
+
+        if ivec3(xhigh, yhigh, zhigh) in obstacles:
+            xhigh += 1
+            zhigh = int(np.mean(zValues) - slope * np.mean(xValues) + slope * xhigh)
+            yhigh = heightmap[xhigh - areaLow[0]][zhigh - areaLow[2]] - 1
+
+
     return [ivec3(xlow, ylow, zlow), ivec3(xhigh, yhigh, zhigh)]
 
 
@@ -135,6 +147,7 @@ def astar(heightmap, areaLow, first, goal, obstacles):
     while not queue.empty():
         current = queue.get()
         open.remove(current.pos)
+        #print("heuristic:", current.h, current.pos)
 
         # If the goal is reached, backtrack the path and return
         if current.h == 0:
@@ -151,13 +164,15 @@ def astar(heightmap, areaLow, first, goal, obstacles):
 
         # Adding new nodes to the queue
         for neighbor in current.possibleBlocks(heightmap, areaLow):
+            #print("neighbor")
             if neighbor not in obstacles and neighbor not in closed:
                 if neighbor in open:  # implement this later for better functionality
                     pass
                 else:
+                    #print("adding")
                     queue.put(Node(neighbor, current, goal))
                     open.append(neighbor)
-
+    
     return None
 
 
@@ -191,19 +206,19 @@ class Node:
         # works for square heightmaps
         length = len(heightmap)
 
-        if not (self.pos.x + 1 < 0 or self.pos.x + 1 >= length or self.pos.z < 0 or self.pos.z >= length):
+        if not self.pos.x + 1 - areaLow[0] >= length:
             blocks.append(
                 ivec3(self.pos.x + 1, heightmap[self.pos.x + 1 - areaLow[0]][self.pos.z - areaLow[2]] - 1, self.pos.z))
 
-        if not (self.pos.x < 0 or self.pos.x >= length or self.pos.z + 1 < 0 or self.pos.z + 1 >= length):
+        if not self.pos.z + 1 - areaLow[2] >= length:
             blocks.append(
                 ivec3(self.pos.x, heightmap[self.pos.x - areaLow[0]][self.pos.z + 1 - areaLow[2]] - 1, self.pos.z + 1))
 
-        if not (self.pos.x - 1 < 0 or self.pos.x - 1 >= length or self.pos.z < 0 or self.pos.z >= length):
+        if not self.pos.x - 1 - areaLow[0] < 0:
             blocks.append(
                 ivec3(self.pos.x - 1, heightmap[self.pos.x - 1 - areaLow[0]][self.pos.z - areaLow[2]] - 1, self.pos.z))
 
-        if not (self.pos.x < 0 or self.pos.x >= length or self.pos.z - 1 < 0 or self.pos.z - 1 >= length):
+        if not self.pos.z - 1 - areaLow[2] < 0:
             blocks.append(
                 ivec3(self.pos.x, heightmap[self.pos.x - areaLow[0]][self.pos.z - 1 - areaLow[2]] - 1, self.pos.z - 1))
 
