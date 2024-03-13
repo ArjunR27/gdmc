@@ -56,7 +56,8 @@ print(f"Average height: {int(np.mean(heightmap))}")
 begin = buildArea.begin
 end = buildArea.end
 
-water_array = map_water(editor, begin, end, heightmap)
+# water_array = map_water(editor, begin, end, heightmap)
+water_array = None
 settlement_plot, settlement_water, negative, positive = find_settlement_location(begin, water_array, heightmap)
 building_plots = find_building_locations(settlement_plot, settlement_water, negative)
 
@@ -67,8 +68,8 @@ createFoundations(editor, building_plots, num_buildings)
 structures = []
 
 for plot in building_plots[:num_buildings]:
-    structure = build_structure(editor, "Schematics/basic_house.txt", plot)
-    structure.set_door((-2, -1, -1))
+    structure = build_structure(editor, "Schematics/oak_house.txt", plot)
+    structure.set_door((-1, -1, -5))
     structures.append(structure)
 
 buildRoads(heightmap, begin, structures)

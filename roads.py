@@ -83,6 +83,7 @@ def buildRoads(heightmap, areaLow, buildings):
 
     # For each building path to the nearest point on the highway to path to
     for building in buildings:
+        print("DOOOOOOOOOOR:", building.door)
         path = astar(heightmap, areaLow, building.door, findNearest(building.door, goals), obstacles)
         print("path built")
         for block in path:
