@@ -71,8 +71,8 @@ class Structure:
     def get_door(self):
         return self.door
 
-    def set_door(self, coordinate: ivec3):
-        self.door = coordinate
+    def set_door(self, offset):
+        self.door = ivec3(self.start.x + offset[0], self.start.y + offset[1], self.start.z + offset[2])
 
 
 def write_schematic_to_file(filename, corner1, corner2):
