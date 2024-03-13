@@ -10,6 +10,7 @@ from settler import map_water, find_settlement_location, find_building_locations
 from foundationPlacement import createFoundations
 from schematics import build_structure
 from roads import buildRoads
+from remove_trees import remove
 
 # Create an editor object.
 # The Editor class provides a high-level interface to interact with the Minecraft world.
@@ -56,6 +57,7 @@ print(f"Average height: {int(np.mean(heightmap))}")
 begin = buildArea.begin
 end = buildArea.end
 
+remove(editor, buildArea)
 # water_array = map_water(editor, begin, end, heightmap)
 water_array = None
 settlement_plot, settlement_water, negative, positive = find_settlement_location(begin, water_array, heightmap)
@@ -69,7 +71,7 @@ structures = []
 
 for plot in building_plots[:num_buildings]:
     structure = build_structure(editor, "Schematics/oak_house.txt", plot)
-    structure.set_door((-1, -1, -5))
+    structure.set_door((-1, -1, -6))
     structures.append(structure)
 
 buildRoads(heightmap, begin, structures)
