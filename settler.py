@@ -112,7 +112,7 @@ def find_settlement_location(begin, water_array, heightmap):
     lowest_std = sys.maxsize
 
     # Hyperparameters
-    plot_size = 50
+    plot_size = 100
     step = 1
     max_water_percentage = .3
 
@@ -145,7 +145,7 @@ def find_building_locations(settlement_plot, settlement_water, negative):
     building_plots = []
 
     # Hyperparameters
-    building_size = 7
+    building_size = 9
     step = 1
 
     # Iterate over building area with step and search for plots
