@@ -18,4 +18,4 @@ def createFoundations(editor, plots, num_buildings):
         box_corner2 = (building_plot.plot_len - 2, maxHeight - minHeight, building_plot.plot_len - 2)
 
         # Place hollow box
-        geometry.placeBoxHollow(editor, Box(box_corner1, box_corner2), Block("blue_concrete"))
+        geometry.placeBoxHollow(editor, Box(box_corner1, box_corner2), Block("cobblestone"))
