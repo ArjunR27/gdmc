@@ -84,4 +84,6 @@ def remove():
         for z_start in range(0, len(heightmap[0]) + 1, step):
             for block in blocks_to_remove:
                 editor.runCommand('fill ' + str(buildArea.begin.x + x_start) + ' ' + str(min_surface_height) + ' ' + str(buildArea.begin.z + z_start) + ' ' + str(buildArea.begin.x + x_start + step-1) + ' ' + str(max_surface_height + 20) + ' ' + str(buildArea.begin.z + z_start + step-1) + ' air replace ' + block)
-remove()
+
+
+
