@@ -107,8 +107,10 @@ def write_schematic_to_file(filename, corner1, corner2):
                                nonZeroSign(corner2_c[2] - corner1_c[2])):
                     vec = ivec3(x, y, z)
                     block = str(editor.getBlock(vec))
+                    # print(block)
                     # Extracting the block name without the minecraft: prefix
-                    block_name = block.split(":")[-1]  # Assuming block format is 'minecraft:block_name'
+                    block_name = block.split(":", 1)[1]  # Assuming block format is 'minecraft:block_name'
+                    # print("Block:", block_name)
                     file.write(f"'{block_name}', ")
                 file.write("],\n")
             file.write("    ],\n")
@@ -142,7 +144,7 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
     :param filepath: name of file for which schematic you want to load
     :param plot: BuildingPlot, converted to ivec3, the Southeast (pos x, pos z) corner of the plot
     :param direction: String, direction building faces. East is default
-    :return numpy array:
+    :return Structure:
     """
 
     schematic = read_schematic_from_file(filepath)
@@ -179,10 +181,12 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
                     continue
 
                 # Extract block information
-                block_info = block.split('[')
+                # print("BLOCK:", block)  # debug
+                block_info = block.split('[', 1)
                 block_name = block_info[0]
-                # print(block) # debug
-                block_properties = '[' + block_info[1] if len(block_info) > 1 else ''
+                # print("INFO:", block_info)  # debug
+                block_properties = '[' + ''.join(block_info[1:]) if len(block_info) > 1 else ''
+                # print("PROPERTIES:", block_properties)  # debug
 
                 if not door_found and "_door" in block_name:  # finds door for road generation
                     # print(f"Found door: {block},    coordinates", x, y, z) # debug
@@ -199,7 +203,7 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
 
                 # Place the block with the updated information
                 editor.placeBlock(ivec3(x, y, z), Block(block_name + block_properties))
-                # print("placed", str(block_name + block_properties), "at ", x, y, z)  # debug
+                print("placed", str(block_name + block_properties), "at ", x, y, z)  # debug
 
                 z = z - 1  # moves to next block in row
             z = start[2]  # resets block
@@ -211,11 +215,12 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
     struct = Structure(start, end, filepath, direction, door)
     return struct
 
-# corner1 = ivec3(-34, 64, 528)
-# corner2 = ivec3(-42, 68, 520)
-#
-# #write_schematic_to_file("igloo.txt", corner1, corner2)
-#
-# start = ivec3(-60, 63, 495)
-#
-# igloo = build_structure(editor, "./Schematics/igloo.txt", start, "west")
+
+# corner1 = ivec3(-14, 69, 153)
+# corner2 = ivec3(-20, 73, 147)
+# #
+# write_schematic_to_file("barrel.txt", corner1, corner2)
+# #
+# start = ivec3(-7, 70, 137)
+# #
+# igloo = build_structure(editor, "./Schematics/barrel.txt", start, "west")
