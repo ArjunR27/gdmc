@@ -10,6 +10,7 @@ import os
 import ast
 from settler import BuildingPlot
 
+
 # The minimum build area size in the XZ-plane
 MIN_BUILD_AREA_SIZE = ivec2(35, 35)
 

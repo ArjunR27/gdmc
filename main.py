@@ -57,7 +57,7 @@ print(f"Average height: {int(np.mean(heightmap))}")
 begin = buildArea.begin
 end = buildArea.end
 
-remove(editor, buildArea)
+#remove(editor, buildArea)
 # water_array = map_water(editor, begin, end, heightmap)
 water_array = None
 settlement_plot, settlement_water, negative, positive = find_settlement_location(begin, water_array, heightmap)
