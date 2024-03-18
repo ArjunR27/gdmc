@@ -5,6 +5,7 @@ from gdpc.vector_tools import *
 import numpy as np
 import itertools
 
+# Dictionary of all target blocks to remove
 blocks_to_remove = {
     Block("minecraft:oak_leaves").id,
     Block("minecraft:birch_leaves").id,
@@ -40,32 +41,9 @@ blocks_to_remove = {
     Block("minecraft:mushroom_stem").id,
 }
 
+
+# Function to remove target blocks
 def remove(editor, buildArea):
-    # editor = Editor()
-    # editor.buffering = True
-    # editor.bufferLimit = 512
-    # # editor.multithreading = True
-    # editor.caching = True
-    # try:
-    #     editor.checkConnection()
-    # except InterfaceConnectionError:
-    #     print(
-    #         f"Error: Could not connect to the GDMC HTTP interface at {editor.host}!\n"
-    #         'To use GDPC, you need to use a "backend" that provides the GDMC HTTP interface.\n'
-    #         "For example, by running Minecraft with the GDMC HTTP mod installed.\n"
-    #         f"See {__url__}/README.md for more information."
-    #     )
-    #     sys.exit(1)
-    #
-    # try:
-    #     buildArea = editor.getBuildArea()
-    # except BuildAreaNotSetError:
-    #     print(
-    #         "Error: failed to get the build area!\n"
-    #         "Make sure to set the build area with the /setbuildarea command in-game.\n"
-    #         "For example: /setbuildarea ~0 0 ~0 ~64 200 ~64"
-    #     )
-    #     sys.exit(1)
 
     buildRectangle = buildArea.toRect()
 

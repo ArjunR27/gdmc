@@ -5,7 +5,7 @@ from gdpc import __url__, Editor, Block, geometry, Box
 from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
 from glm import ivec3
 
-
+# Places foundations so that buils are generated on even plots
 def createFoundations(editor, plots, num_buildings):
 
     for building_plot in plots[:num_buildings]:
