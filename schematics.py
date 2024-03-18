@@ -216,11 +216,12 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
     return struct
 
 
-# corner1 = ivec3(-14, 69, 153)
-# corner2 = ivec3(-20, 73, 147)
-# #
-# write_schematic_to_file("barrel.txt", corner1, corner2)
-# #
+corner1 = ivec3(45, -12, -199)
+corner2 = ivec3(37, -2, -191)
+
+write_schematic_to_file("snowy_beach_house.txt", corner1, corner2)
+
+
 # start = ivec3(-7, 70, 137)
-# #
+
 # igloo = build_structure(editor, "./Schematics/barrel.txt", start, "west")

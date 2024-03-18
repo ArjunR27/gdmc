@@ -106,15 +106,17 @@ def map_water(editor, begin, end, heightmap):
 
 
 def find_settlement_location(begin, water_array, heightmap):
-    # Variable declaration
-    best_plot = []
-    best_plot_water = []
-    lowest_std = sys.maxsize
-
     # Hyperparameters
     plot_size = 100
     step = 1
     max_water_percentage = .7
+
+    # Variable declaration
+    lowest_std = sys.maxsize
+    plot = heightmap[0: plot_size, 0: plot_size]
+    std = np.std(plot)
+    best_plot_water = water_array[0: plot_size, 0: plot_size]
+    best_plot = BuildingPlot(plot, begin.x, begin.z, std)
 
     # Iterate over building area with step and search for plots
     for x_offset in range(0, len(heightmap) - plot_size + 1, step):
@@ -123,14 +125,15 @@ def find_settlement_location(begin, water_array, heightmap):
             # Extract a potential plot, get std and water_percentage
             plot = heightmap[x_offset: x_offset + plot_size, z_offset: z_offset + plot_size]
             std = np.std(plot)
-            # water_plot = water_array[x_offset: x_offset + plot_size, z_offset: z_offset + plot_size]
-            # water_percentage = 3 * np.count_nonzero(water_plot == 1) / water_plot.size * 100
+            water_plot = water_array[x_offset: x_offset + plot_size, z_offset: z_offset + plot_size]
+            water_percentage = 3 * np.count_nonzero(water_plot == 1) / water_plot.size * 100
 
             # If there is a new lowest std and acceptable water percentage, new best plot found
-            if std < lowest_std:
+            if std < lowest_std and water_percentage < max_water_percentage:
+                print("new best plot found with std:", std)
                 lowest_std = std
                 best_plot = BuildingPlot(plot, begin.x + x_offset, begin.z + z_offset, std)
-                # best_plot_water = water_plot
+                best_plot_water = water_plot
 
     # Define corners for new plot
     y = 150
@@ -141,12 +144,12 @@ def find_settlement_location(begin, water_array, heightmap):
 
 
 def find_building_locations(settlement_plot, settlement_water, negative):
-    # Variable declaration
-    building_plots = []
-
     # Hyperparameters
     building_size = 9
     step = 1
+
+    # Variable declaration
+    building_plots = []
 
     # Iterate over building area with step and search for plots
     for x_offset in range(0, settlement_plot.plot_len - building_size + 1, step):
@@ -155,13 +158,13 @@ def find_building_locations(settlement_plot, settlement_water, negative):
             # Extract a potential plot, get std and water_percentage
             plot = settlement_plot.plot[x_offset: x_offset + building_size, z_offset: z_offset + building_size]
             std = np.std(plot)
-            # water_plot = settlement_water[x_offset: x_offset + building_size, z_offset: z_offset + building_size]
-            # water_percentage = np.count_nonzero(water_plot == 1) / water_plot.size * 100
+            water_plot = settlement_water[x_offset: x_offset + building_size, z_offset: z_offset + building_size]
+            water_percentage = np.count_nonzero(water_plot == 1) / water_plot.size * 100
 
-            # # If there is no water
-            # if water_percentage == 0:
-            new_plot = BuildingPlot(plot, negative[0] + x_offset, negative[2] + z_offset, std)
-            building_plots.append(new_plot)
+            # If there is no water
+            if water_percentage == 0:
+                new_plot = BuildingPlot(plot, negative[0] + x_offset, negative[2] + z_offset, std)
+                building_plots.append(new_plot)
 
     # Sort plots by standard deviation and filter overlapping plots
     padding = 3
@@ -171,7 +174,7 @@ def find_building_locations(settlement_plot, settlement_water, negative):
     return building_plots
 
 
-def place_outlines(building_plots, negative, positive):
+def place_outlines(editor, building_plots, negative, positive):
     # Outline building plot at y level set below
     diamond = "diamond_block"
     gold = "gold_block"
@@ -180,8 +183,8 @@ def place_outlines(building_plots, negative, positive):
 
     build_outline(negative, positive, diamond, y)
 
-    for plot in building_plots[:8]:
+    for plot in building_plots:
         negative_corner = (plot.x, y, plot.z)
         positive_corner = (plot.x + plot.plot_len, y, plot.z + plot.plot_len)
-        build_outline(negative_corner, positive_corner, gold, y)
+        build_outline(editor, negative_corner, positive_corner, gold, y)
 

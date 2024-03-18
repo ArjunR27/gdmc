@@ -6,7 +6,7 @@ from gdpc import __url__, Editor, Block
 from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
 from gdpc.vector_tools import addY
 
-from settler import map_water, find_settlement_location, find_building_locations
+from settler import map_water, find_settlement_location, find_building_locations, place_outlines
 from foundationPlacement import createFoundations
 from schematics import build_structure
 from roads import buildRoads
@@ -57,9 +57,8 @@ print(f"Average height: {int(np.mean(heightmap))}")
 begin = buildArea.begin
 end = buildArea.end
 
-remove(editor, buildArea)
-# water_array = map_water(editor, begin, end, heightmap)
-water_array = None
+# remove(editor, buildArea)
+water_array = map_water(editor, begin, end, heightmap)
 settlement_plot, settlement_water, negative, positive = find_settlement_location(begin, water_array, heightmap)
 building_plots = find_building_locations(settlement_plot, settlement_water, negative)
 
@@ -70,7 +69,7 @@ createFoundations(editor, building_plots, num_buildings)
 structures = []
 
 for plot in building_plots[:num_buildings]:
-    structure = build_structure(editor, "Schematics/oak_house.txt", plot)
+    structure = build_structure(editor, "Schematics/birch_house.txt", plot)
     structure.set_door((-1, -1, -6))
     structures.append(structure)
 
