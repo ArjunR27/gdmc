@@ -4,46 +4,8 @@ from gdpc import __url__, Editor, Block
 from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
 from glm import ivec3
 
-# from building import *
 from schematics import *
 import numpy as np
-
-
-# # Create an editor object.
-# # The Editor class provides a high-level interface to interact with the Minecraft world.
-# editor = Editor()
-#
-#
-# # Check if the editor can connect to the GDMC HTTP interface.
-# try:
-#     editor.checkConnection()
-# except InterfaceConnectionError:
-#     print(
-#         f"Error: Could not connect to the GDMC HTTP interface at {editor.host}!\n"
-#         "To use GDPC, you need to use a \"backend\" that provides the GDMC HTTP interface.\n"
-#         "For example, by running Minecraft with the GDMC HTTP mod installed.\n"
-#         f"See {__url__}/README.md for more information."
-#     )
-#     sys.exit(1)
-#
-# try:
-#     buildArea = editor.getBuildArea()
-# except BuildAreaNotSetError:
-#     print(
-#         "Error: failed to get the build area!\n"
-#         "Make sure to set the build area with the /setbuildarea command in-game.\n"
-#         "For example: /setbuildarea ~0 0 ~0 ~64 200 ~64"
-#     )
-#     sys.exit(1)
-#
-# print("Loading world slice...")
-# buildRect = buildArea.toRect()
-# worldSlice = editor.loadWorldSlice(buildRect)
-# print("World slice loaded!")
-#
-# heightmap = worldSlice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
-# areaLow = buildArea.begin
-# areaHigh = buildArea.end
 
 def buildRoads(heightmap, areaLow, buildings):
     obstacles = []
@@ -78,7 +40,7 @@ def buildRoads(heightmap, areaLow, buildings):
     for block in highway:
         # print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
         goals.append(block.pos)
-        editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("blue_concrete"))
+        editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("dirt_path"))
         # editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("grass_block"))
 
     # For each building path to the nearest point on the highway to path to
@@ -88,7 +50,7 @@ def buildRoads(heightmap, areaLow, buildings):
         print("path built")
         for block in path:
             # print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
-            editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("red_concrete"))
+            editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("dirt_path"))
             #editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("grass_block"))
 
 
@@ -225,12 +187,3 @@ class Node:
 
         return blocks
 
-# building1 = Structure(ivec3(90, 64, 9), ivec3(86, 70, 11), "path", "east", ivec3(90, 63, 10))
-# building2 = Structure(ivec3(80, 64, 28), ivec3(76, 70, 31), "path", "north", ivec3(78, 63, 28))
-# building3 = Structure(ivec3(132, 63, 7), ivec3(128, 70, 9), "path", "west", ivec3(128, 62, 8))
-# building4 = Structure(ivec3(122, 64, -14), ivec3(120, 70, -12), "path", "south", ivec3(121, 63, -12))
-# building5 = Structure(ivec3(156, 67, -12), ivec3(152, 80, -9), "path", "north", ivec3(154, 66, -12))
-# building6 = Structure(ivec3(126, 63, -40), ivec3(122, 70, -38), "path", "north", ivec3(124, 62, -40))
-#
-# buildings = [building1, building4, building3, building2, building5, building6]
-# buildRoads(heightmap, areaLow, buildings)
