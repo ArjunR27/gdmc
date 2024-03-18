@@ -1,4 +1,6 @@
 import sys
+import time
+
 import numpy as np
 from gdpc.utils import nonZeroSign
 from glm import ivec2, ivec3
@@ -85,6 +87,8 @@ def write_schematic_to_file(filename, corner1, corner2):
         :param corner2: opposite of corner 1, converted to NW, top
     """
     # Ensure the Schematics directory exists
+    start_time = time.time()
+
     directory = "Schematics"
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -108,7 +112,6 @@ def write_schematic_to_file(filename, corner1, corner2):
                                nonZeroSign(corner2_c[2] - corner1_c[2])):
                     vec = ivec3(x, y, z)
                     block = str(editor.getBlock(vec))
-                    # print(block)
                     # Extracting the block name without the minecraft: prefix
                     block_name = block.split(":", 1)[1]  # Assuming block format is 'minecraft:block_name'
                     # print("Block:", block_name)
@@ -116,7 +119,10 @@ def write_schematic_to_file(filename, corner1, corner2):
                 file.write("],\n")
             file.write("    ],\n")
         file.write("]\n")
+    end_time = time.time()
     print(f"Schematic written to {filepath}")
+    elapsed_time = end_time - start_time
+    print("Created Schematic in:", elapsed_time, "seconds")
 
 
 def read_schematic_from_file(filename):
@@ -147,7 +153,7 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
     :param direction: String, direction building faces. East is default
     :return Structure:
     """
-
+    start_time = time.time()
     schematic = read_schematic_from_file(filepath)
     door_found = False  # records first door found
     door = None
@@ -170,7 +176,7 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
     y = start[1]
     z = start[2]
     end = start
-    # print("Start at,", start)
+    #print("Start at,", start)
 
     # builds structure in layers pos to neg X, each layer is built in rows from bottom to top, rows built pos to neg Z
     for layer in schematic:
@@ -197,14 +203,21 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
                 # Handle rotation of directional blocks
                 if direction != "east" and 'facing=' in block_properties:
                     # Extract current facing direction and update properties
-                    facing_info = block_properties.split('facing=')[1].split(',')[0]
-                    facing_direction = facing_info.replace("]", "").replace("'", "").strip()
-                    updated_facing = facing_mapping.get(facing_direction, facing_direction)
-                    block_properties = '[' + 'facing=' + updated_facing + ',' + block_properties.split(',', 1)[1]
+
+                    properties_list = block_properties.strip('[]').split(',')
+                    for i, prop in enumerate(properties_list):
+                        if 'facing=' in prop:
+                            facing_info = prop.split('facing=')[1]
+                            facing_direction = facing_info.strip()
+                            updated_facing = facing_mapping.get(facing_direction, facing_direction)
+                            properties_list[i] = 'facing=' + updated_facing
+                            break  # Exit loop after updating facing property
+                    # Reconstruct block_properties string
+                    block_properties = '[' + ','.join(properties_list) + ']'
 
                 # Place the block with the updated information
                 editor.placeBlock(ivec3(x, y, z), Block(block_name + block_properties))
-                print("placed", str(block_name + block_properties), "at ", x, y, z)  # debug
+                # print("placed", str(block_name + block_properties), "at ", x, y, z)  # debug
 
                 z = z - 1  # moves to next block in row
             z = start[2]  # resets block
@@ -212,16 +225,19 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
         y = start[1]  # resets row
         x = x - 1  # moves to next layer in structure
 
-    # print("End at,", end)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print("Built Structure in:", elapsed_time, "seconds")
+    #print("End at,", end)
     struct = Structure(start, end, filepath, direction, door)
     return struct
 
 
-# corner1 = ivec3(-14, 69, 153)
-# corner2 = ivec3(-20, 73, 147)
-# #cg
-# write_schematic_to_file("barrel.txt", corner1, corner2)
-# #
-# start = ivec3(-7, 70, 137)
-# #
-# igloo = build_structure(editor, "./Schematics/barrel.txt", start, "west")
+# corner1 = ivec3(96, 63, 469)
+# corner2 = ivec3(88, 83, 461)
+#
+# write_schematic_to_file("ice_spike_house.txt", corner1, corner2)
+#
+# start = ivec3(111, 63, 483)
+#
+# basic_house = build_structure(editor, "./Schematics/ice_spike_house.txt", start, "south")
