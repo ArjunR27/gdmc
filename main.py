@@ -70,6 +70,7 @@ structures = []
 
 for plot in building_plots[:num_buildings]:
     structure = build_structure(editor, plot)
+    #TODO set custom door location for houses
     structure.set_door((-1, -1, -6))
     structures.append(structure)
 
