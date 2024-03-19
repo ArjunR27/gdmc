@@ -13,6 +13,8 @@ from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
 from gdpc.vector_tools import addY
 from tqdm import tqdm
 from foundationPlacement import createFoundations
+from biome import biomes_dict
+from glm import ivec3
 
 
 class BuildingPlot:
@@ -23,6 +25,8 @@ class BuildingPlot:
         self.std = std
         self.plot_len = len(self.plot)
         self.y = np.max(self.plot)
+        self.biome = None
+        self.schematic_path = None
 
     def display_info(self):
         print("Building Plot Information:")
@@ -37,6 +41,11 @@ class BuildingPlot:
 
     def get_z_range(self, padding=0):
         return range(self.z - padding, self.z + self.plot_len + padding)
+
+    def update_biome(self, editor):
+        biome_coord = ivec3(self.x, 100, self.z)
+        self.biome = editor.getBiome(biome_coord)
+        self.schematic_path = "Schematics\\" + biomes_dict[self.biome]
 
     def __lt__(self, other):
         return self.std < other.std
@@ -143,7 +152,7 @@ def find_settlement_location(begin, water_array, heightmap):
     return best_plot, best_plot_water, negative, positive
 
 
-def find_building_locations(settlement_plot, settlement_water, negative):
+def find_building_locations(editor, settlement_plot, settlement_water, negative):
     # Hyperparameters
     building_size = 9
     step = 1
@@ -170,6 +179,8 @@ def find_building_locations(settlement_plot, settlement_water, negative):
     padding = 3
     building_plots = sorted(building_plots)
     building_plots = filter_overlapping_plots(building_plots, padding)
+    for plot in building_plots:
+        plot.update_biome(editor)
 
     return building_plots
 

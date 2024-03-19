@@ -60,7 +60,7 @@ end = buildArea.end
 # remove(editor, buildArea)
 water_array = map_water(editor, begin, end, heightmap)
 settlement_plot, settlement_water, negative, positive = find_settlement_location(begin, water_array, heightmap)
-building_plots = find_building_locations(settlement_plot, settlement_water, negative)
+building_plots = find_building_locations(editor, settlement_plot, settlement_water, negative)
 
 num_buildings = 12
 
@@ -69,7 +69,7 @@ createFoundations(editor, building_plots, num_buildings)
 structures = []
 
 for plot in building_plots[:num_buildings]:
-    structure = build_structure(editor, "Schematics/birch_house.txt", plot)
+    structure = build_structure(editor, plot)
     structure.set_door((-1, -1, -6))
     structures.append(structure)
 

@@ -143,7 +143,7 @@ def read_schematic_from_file(filename):
     return schematic_array
 
 
-def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
+def build_structure(editor, plot: BuildingPlot, direction="east"):
     """
     Reads schematic from file and builds structure into world. Structure builds in an order depending
     on which coordinates are used to create the schematic. End result is not affected.
@@ -154,7 +154,11 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
     :return Structure:
     """
     start_time = time.time()
-    schematic = read_schematic_from_file(filepath)
+    schematic_path = plot.schematic_path
+    if schematic_path is None:
+        print("Error: No schematic for biome:", plot.biome)
+        sys.exit(1)
+    schematic = read_schematic_from_file(schematic_path)
     door_found = False  # records first door found
     door = None
 
@@ -229,7 +233,7 @@ def build_structure(editor, filepath, plot: BuildingPlot, direction="east"):
     elapsed_time = end_time - start_time
     print("Built Structure in:", elapsed_time, "seconds")
     #print("End at,", end)
-    struct = Structure(start, end, filepath, direction, door)
+    struct = Structure(start, end, schematic_path, direction, door)
     return struct
 
 
