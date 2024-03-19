@@ -45,9 +45,9 @@ def buildRoads(heightmap, areaLow, buildings):
 
     # For each building path to the nearest point on the highway to path to
     for building in buildings:
-        print("DOOOOOOOOOOR:", building.door)
+        # print("DOOOOOOOOOOR:", building.door)
         path = astar(heightmap, areaLow, building.door, findNearest(building.door, goals), obstacles)
-        print("path built")
+        # print("path built")
         for block in path:
             # print("placing block at:", block.pos.x, block.pos.y, block.pos.z)
             editor.placeBlock((block.pos.x, block.pos.y, block.pos.z), Block("dirt_path"))

@@ -237,10 +237,10 @@ def build_structure(editor, plot: BuildingPlot, direction="east"):
     return struct
 
 
-# corner1 = ivec3(96, 63, 469)
-# corner2 = ivec3(88, 83, 461)
+# corner1 = ivec3(45, -12, -231)
+# corner2 = ivec3(37, 5, -223)
 #
-# write_schematic_to_file("ice_spike_house.txt", corner1, corner2)
+# write_schematic_to_file("jungle_house.txt", corner1, corner2)
 #
 # start = ivec3(111, 63, 483)
 #

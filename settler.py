@@ -45,7 +45,7 @@ class BuildingPlot:
     def update_biome(self, editor):
         biome_coord = ivec3(self.x, 100, self.z)
         self.biome = editor.getBiome(biome_coord)
-        self.schematic_path = "Schematics\\" + biomes_dict[self.biome]
+        self.schematic_path = biomes_dict[self.biome]
 
     def __lt__(self, other):
         return self.std < other.std
