@@ -1,5 +1,7 @@
 This is a project in CSC-480 at Cal Poly SLO under Prof. Rodrigp Cannan. 
 
+Report uploaded under "GDMC_Final_Report.pdf"
+
 Credit:
 - Utilizes GDPC (Generative Design Python Client) and GDMC-HTTP frameworks
 - GDPC GitHub: https://github.com/avdstaaij/gdpc
